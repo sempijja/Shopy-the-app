@@ -1,17 +1,18 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,22 +20,32 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Authentication logic would go here in a real application
-      console.log("Login attempt with:", { email, password });
+      const credentials = loginMethod === "email" 
+        ? { email: identifier, password }
+        : { phone: identifier, password }
+
+      console.log('Attempting login with:', credentials)
       
-      // Simulate successful login
+      const { data, error } = await supabase.auth.signInWithPassword(credentials)
+
+      if (error) {
+        console.error('Login error details:', error)
+        throw error
+      }
+
+      console.log('Login successful:', data)
+
       toast({
         title: "Success!",
         description: "You have successfully logged in.",
       });
       
-      // Redirect to dashboard
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -52,18 +63,39 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
+            <div className="flex gap-4 mb-4">
+              <Button
+                type="button"
+                variant={loginMethod === "email" ? "default" : "outline"}
+                onClick={() => setLoginMethod("email")}
+              >
+                Email
+              </Button>
+              <Button
+                type="button"
+                variant={loginMethod === "phone" ? "default" : "outline"}
+                onClick={() => setLoginMethod("phone")}
+              >
+                Phone
+              </Button>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="identifier">{loginMethod === "email" ? "Email" : "Phone Number"}</Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  {loginMethod === "email" ? (
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Phone className="h-5 w-5 text-gray-400" />
+                  )}
                 </div>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  type={loginMethod === "email" ? "email" : "tel"}
+                  placeholder={loginMethod === "email" ? "your@email.com" : "+1234567890"}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="pl-10"
                   required
                 />

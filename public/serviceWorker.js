@@ -1,13 +1,11 @@
-
 // This is a basic service worker implementation
 const CACHE_NAME = 'shopy-inc-v1';
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png'
+  '/favicons/index.html',
+  '/favicons/manifest.json',
+  '/favicons/favicon.ico',
+  '/favicons/android-icon-192x192.png',
 ];
 
 // Install a service worker
@@ -22,6 +20,11 @@ self.addEventListener('install', event => {
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
+  // Ignore chrome-extension requests
+  if (event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

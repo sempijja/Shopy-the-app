@@ -1,30 +1,53 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Building } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Building,
+  Shirt,
+  Smartphone,
+  Home,
+  Sparkles,
+  Coffee,
+  Pill,
+  FileDigit,
+  Palette,
+  Dumbbell,
+  GamepadIcon,
+  Gem,
+  BookOpen,
+  Car,
+  Cat,
+  Briefcase
+} from "lucide-react";
+
+// Map of industries with their corresponding icons
+const INDUSTRY_ICONS = {
+  "Fashion & Apparel": Shirt,
+  "Electronics": Smartphone,
+  "Home & Furniture": Home,
+  "Beauty & Personal Care": Sparkles,
+  "Food & Beverages": Coffee,
+  "Health & Wellness": Pill,
+  "Digital Products": FileDigit,
+  "Arts & Crafts": Palette,
+  "Sports & Outdoors": Dumbbell,
+  "Toys & Games": GamepadIcon,
+  "Jewelry & Accessories": Gem,
+  "Books & Media": BookOpen,
+  "Automotive": Car,
+  "Pet Supplies": Cat,
+  "Office Supplies": Briefcase
+};
 
 // List of available industries
-const INDUSTRIES = [
-  "Fashion & Apparel",
-  "Electronics",
-  "Home & Furniture",
-  "Beauty & Personal Care",
-  "Food & Beverages",
-  "Health & Wellness",
-  "Digital Products",
-  "Arts & Crafts",
-  "Sports & Outdoors",
-  "Toys & Games",
-  "Jewelry & Accessories",
-  "Books & Media",
-  "Automotive",
-  "Pet Supplies",
-  "Office Supplies"
-];
+const INDUSTRIES = Object.keys(INDUSTRY_ICONS);
 
 const StoreSetup = () => {
   const [storeName, setStoreName] = useState("");
@@ -32,7 +55,7 @@ const StoreSetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleIndustryChange = (industry: string) => {
+  const handleIndustryToggle = (industry: string) => {
     setSelectedIndustries((prev) => {
       // If already selected, remove it
       if (prev.includes(industry)) {
@@ -78,8 +101,8 @@ const StoreSetup = () => {
         description: "Your store has been set up successfully.",
       });
       
-      // Redirect to dashboard
-      navigate("/dashboard");
+      // Redirect to product creation page
+      navigate("/add-product");
     } catch (error) {
       console.error("Store setup error:", error);
       toast({
@@ -93,14 +116,14 @@ const StoreSetup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-md">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="w-full max-w-md mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold">Set Up Your Store</h1>
           <p className="mt-2 text-gray-600">Tell us about your business</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="storeName">Store Name</Label>
@@ -121,28 +144,32 @@ const StoreSetup = () => {
             </div>
 
             <div className="space-y-3">
-              <Label>
-                Industry (Select up to 3)
-                <span className="ml-1 text-sm text-gray-500">
+              <div className="flex justify-between items-center">
+                <Label>Industry</Label>
+                <Badge variant="outline" className="font-normal">
                   {selectedIndustries.length}/3 selected
-                </span>
-              </Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
-                {INDUSTRIES.map((industry) => (
-                  <div key={industry} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`industry-${industry}`}
-                      checked={selectedIndustries.includes(industry)}
-                      onCheckedChange={() => handleIndustryChange(industry)}
-                    />
-                    <label
-                      htmlFor={`industry-${industry}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {INDUSTRIES.map((industry) => {
+                  const IconComponent = INDUSTRY_ICONS[industry as keyof typeof INDUSTRY_ICONS];
+                  const isSelected = selectedIndustries.includes(industry);
+                  
+                  return (
+                    <Toggle
+                      key={industry}
+                      pressed={isSelected}
+                      onPressedChange={() => handleIndustryToggle(industry)}
+                      className={`flex-col h-24 items-center justify-center gap-2 p-3 text-center ${
+                        isSelected ? 'border-primary' : 'border-input'
+                      }`}
                     >
-                      {industry}
-                    </label>
-                  </div>
-                ))}
+                      <IconComponent className={`h-6 w-6 ${isSelected ? 'text-primary' : 'text-gray-500'}`} />
+                      <span className="text-xs">{industry}</span>
+                    </Toggle>
+                  );
+                })}
               </div>
             </div>
           </div>

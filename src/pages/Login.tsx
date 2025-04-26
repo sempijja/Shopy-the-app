@@ -22,18 +22,18 @@ const Login = () => {
     try {
       const credentials = loginMethod === "email" 
         ? { email: identifier, password }
-        : { phone: identifier, password }
+        : { phone: identifier, password };
 
-      console.log('Attempting login with:', credentials)
+      console.log('Attempting login with:', credentials);
       
-      const { data, error } = await supabase.auth.signInWithPassword(credentials)
+      const { data, error } = await supabase.auth.signInWithPassword(credentials);
 
       if (error) {
-        console.error('Login error details:', error)
-        throw error
+        console.error('Login error details:', error);
+        throw error;
       }
 
-      console.log('Login successful:', data)
+      console.log('Login successful:', data);
 
       toast({
         title: "Success!",
@@ -98,6 +98,8 @@ const Login = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="pl-10"
                   required
+                  pattern={loginMethod === "phone" ? "^\\+[0-9]{10,15}$" : undefined}
+                  title={loginMethod === "phone" ? "Phone number must start with + and contain 10-15 digits" : undefined}
                 />
               </div>
             </div>

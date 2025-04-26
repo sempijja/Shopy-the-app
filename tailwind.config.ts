@@ -52,15 +52,18 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+				shopy: {
+					'50': '#FBF5FC',
+					'100': '#F6E8FA',
+					'200': '#E5C7F0',
+					'300': '#D3A5E6',
+					'400': '#AF6CD4',
+					'500': '#8a3bc2',
+					'600': '#742FAD',
+					'700': '#5B2091',
+					'800': '#421575',
+					'900': '#2B0B57',
+					'950': '#190538'
 				}
 			},
 			borderRadius: {

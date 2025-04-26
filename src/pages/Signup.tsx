@@ -1,24 +1,28 @@
-
+// Import necessary libraries and components
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  // State variables to manage form inputs and UI behavior
+  const [name, setName] = useState(""); // Full name of the user
+  const [identifier, setIdentifier] = useState(""); // Email or phone number based on signup method
+  const [password, setPassword] = useState(""); // Password input
+  const [confirmPassword, setConfirmPassword] = useState(""); // Confirm password input
+  const [showPassword, setShowPassword] = useState(false); // Toggle to show/hide password
+  const [isLoading, setIsLoading] = useState(false); // Loading state for form submission
+  const [signupMethod, setSignupMethod] = useState<"email" | "phone">("email"); // Signup method (email or phone)
+  const navigate = useNavigate(); // Navigation hook for redirecting users
 
+  // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -27,26 +31,47 @@ const Signup = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Registration logic would go here in a real application
-      console.log("Registration with:", { name, email, password });
-      
-      // Simulate successful registration
-      toast({
-        title: "Account created!",
-        description: "You've successfully signed up.",
+      const credentials =
+        signupMethod === "email"
+          ? { email: identifier, password }
+          : { phone: identifier, password };
+
+      const { data, error } = await supabase.auth.signUp({
+        ...credentials,
+        options: {
+          data: {
+            full_name: name, // Store the user's full name in the database
+          },
+          emailRedirectTo: `${window.location.origin}/login`, // Redirect URL for email verification
+        },
       });
-      
-      // Redirect to store creation
-      navigate("/store-setup");
-    } catch (error) {
-      console.error("Signup error:", error);
+
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
+
+      if (signupMethod === "email") {
+        toast({
+          title: "Account created!",
+          description: "Please check your email for verification.",
+        });
+        navigate("/login");
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Your account has been created successfully.",
+        });
+        navigate("/store-setup");
+      }
+    } catch (error: any) {
       toast({
         title: "Registration Failed",
-        description: "There was an error creating your account. Please try again.",
+        description: error.message || "There was an error creating your account. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -56,14 +81,36 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      {/* Container for the signup form */}
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-md">
+        {/* Header section */}
         <div className="text-center">
           <h1 className="text-3xl font-bold">Join Shopy</h1>
           <p className="mt-2 text-gray-600">Create your account</p>
         </div>
 
+        {/* Signup form */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
+            {/* Toggle buttons for selecting signup method */}
+            <div className="flex gap-4 mb-4">
+              <Button
+                type="button"
+                variant={signupMethod === "email" ? "default" : "outline"}
+                onClick={() => setSignupMethod("email")}
+              >
+                Email
+              </Button>
+              <Button
+                type="button"
+                variant={signupMethod === "phone" ? "default" : "outline"}
+                onClick={() => setSignupMethod("phone")}
+              >
+                Phone
+              </Button>
+            </div>
+
+            {/* Full name input */}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <div className="relative">
@@ -82,24 +129,34 @@ const Signup = () => {
               </div>
             </div>
 
+            {/* Email or phone input based on signup method */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="identifier">
+                {signupMethod === "email" ? "Email" : "Phone Number"}
+              </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  {signupMethod === "email" ? (
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Phone className="h-5 w-5 text-gray-400" />
+                  )}
                 </div>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  type={signupMethod === "email" ? "email" : "tel"}
+                  placeholder={signupMethod === "email" ? "your@email.com" : "+1234567890"}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="pl-10"
                   required
+                  pattern={signupMethod === "phone" ? "^\\+[0-9]{10,15}$" : undefined}
+                  title={signupMethod === "phone" ? "Phone number must start with + and contain 10-15 digits" : undefined}
                 />
               </div>
             </div>
 
+            {/* Password input */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -116,6 +173,7 @@ const Signup = () => {
                   required
                   minLength={8}
                 />
+                {/* Toggle button to show/hide password */}
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 flex items-center pr-3"
@@ -130,6 +188,7 @@ const Signup = () => {
               </div>
             </div>
 
+            {/* Confirm password input */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
@@ -150,6 +209,7 @@ const Signup = () => {
             </div>
           </div>
 
+          {/* Submit button */}
           <Button
             type="submit"
             className="w-full"
@@ -158,6 +218,7 @@ const Signup = () => {
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
 
+          {/* Link to login page */}
           <div className="text-center text-sm">
             <span className="text-gray-600">Already have an account?</span>{" "}
             <Link to="/login" className="text-primary hover:underline font-medium">

@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -9,17 +8,23 @@ export default defineConfig(({ mode }) => ({
   // Base path for GitHub Pages deployment
   base: mode === 'production' ? '/shopy-the-app/' : '/',
   server: {
-    host: "::",
-    port: 8080,
+    port: 3000,
+    strictPort: false,
+    host: true,
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 }));

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +10,8 @@ import StoreSetup from "./pages/StoreSetup";
 import AddProduct from "./pages/AddProduct";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
@@ -21,6 +22,8 @@ const App: React.FC = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/store-setup" element={<StoreSetup />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/dashboard" element={<Dashboard />} />

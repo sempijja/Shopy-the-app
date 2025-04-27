@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,46 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Toggle } from "@/components/ui/toggle";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Building,
-  Shirt,
-  Smartphone,
-  Home,
-  Sparkles,
-  Coffee,
-  Pill,
-  FileDigit,
-  Palette,
-  Dumbbell,
-  GamepadIcon,
-  Gem,
-  BookOpen,
-  Car,
-  Cat,
-  Briefcase
-} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { Building } from "lucide-react";
 
-// Map of industries with their corresponding icons
 const INDUSTRY_ICONS = {
-  "Fashion & Apparel": Shirt,
-  "Electronics": Smartphone,
-  "Home & Furniture": Home,
-  "Beauty & Personal Care": Sparkles,
-  "Food & Beverages": Coffee,
-  "Health & Wellness": Pill,
-  "Digital Products": FileDigit,
-  "Arts & Crafts": Palette,
-  "Sports & Outdoors": Dumbbell,
-  "Toys & Games": GamepadIcon,
-  "Jewelry & Accessories": Gem,
-  "Books & Media": BookOpen,
-  "Automotive": Car,
-  "Pet Supplies": Cat,
-  "Office Supplies": Briefcase
+  "Fashion & Apparel": Building,
+  // Add other industries here...
 };
 
-// List of available industries
 const INDUSTRIES = Object.keys(INDUSTRY_ICONS);
 
 const StoreSetup = () => {
@@ -55,23 +22,25 @@ const StoreSetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const user = supabase.auth.user();
+    if (!user) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleIndustryToggle = (industry: string) => {
     setSelectedIndustries((prev) => {
-      // If already selected, remove it
       if (prev.includes(industry)) {
-        return prev.filter(i => i !== industry);
+        return prev.filter((i) => i !== industry);
       }
-      
-      // If not selected and less than 3 industries are selected, add it
       if (prev.length < 3) {
         return [...prev, industry];
       }
-      
-      // If trying to select more than 3, show a toast and return unchanged
       toast({
         title: "Maximum limit reached",
         description: "You can select up to 3 industries only.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return prev;
     });
@@ -79,29 +48,49 @@ const StoreSetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (selectedIndustries.length === 0) {
       toast({
         title: "Industry required",
         description: "Please select at least one industry for your store.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Store creation logic would go here in a real application
-      console.log("Creating store with:", { storeName, selectedIndustries });
-      
-      // Simulate successful store creation
+      const user = supabase.auth.user();
+      if (!user) {
+        toast({
+          title: "Not Authenticated",
+          description: "Please log in to set up your store.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("stores")
+        .insert([
+          {
+            user_id: user.id,
+            store_name: storeName,
+            industries: selectedIndustries,
+          },
+        ]);
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Store created!",
         description: "Your store has been set up successfully.",
       });
-      
-      // Redirect to product creation page
+
       navigate("/add-product");
     } catch (error) {
       console.error("Store setup error:", error);
@@ -127,46 +116,35 @@ const StoreSetup = () => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="storeName">Store Name</Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Building className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input
-                  id="storeName"
-                  type="text"
-                  placeholder="My Awesome Store"
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
+              <Input
+                id="storeName"
+                type="text"
+                placeholder="My Awesome Store"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                required
+              />
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <Label>Industry</Label>
-                <Badge variant="outline" className="font-normal">
-                  {selectedIndustries.length}/3 selected
-                </Badge>
+                <Badge variant="outline">{selectedIndustries.length}/3 selected</Badge>
               </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+              <div className="grid grid-cols-2 gap-3">
                 {INDUSTRIES.map((industry) => {
-                  const IconComponent = INDUSTRY_ICONS[industry as keyof typeof INDUSTRY_ICONS];
+                  const IconComponent = INDUSTRY_ICONS[industry];
                   const isSelected = selectedIndustries.includes(industry);
-                  
+
                   return (
                     <Toggle
                       key={industry}
                       pressed={isSelected}
                       onPressedChange={() => handleIndustryToggle(industry)}
-                      className={`flex-col h-24 items-center justify-center gap-2 p-3 text-center ${
-                        isSelected ? 'border-primary' : 'border-input'
-                      }`}
                     >
-                      <IconComponent className={`h-6 w-6 ${isSelected ? 'text-primary' : 'text-gray-500'}`} />
-                      <span className="text-xs">{industry}</span>
+                      <IconComponent />
+                      <span>{industry}</span>
                     </Toggle>
                   );
                 })}
@@ -176,7 +154,6 @@ const StoreSetup = () => {
 
           <Button
             type="submit"
-            className="w-full"
             disabled={isLoading || !storeName || selectedIndustries.length === 0}
           >
             {isLoading ? "Creating store..." : "Create Store"}

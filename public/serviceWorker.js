@@ -24,6 +24,7 @@ self.addEventListener('fetch', event => {
   if (event.request.url.startsWith('chrome-extension://')) {
     return;
   }
+  console.log('Fetching:', event.request.url);
 
   event.respondWith(
     caches.match(event.request)
@@ -39,7 +40,7 @@ self.addEventListener('fetch', event => {
         return fetch(fetchRequest).then(
           response => {
             // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 

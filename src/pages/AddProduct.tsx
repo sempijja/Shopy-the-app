@@ -1,23 +1,35 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 import { Package, DollarSign, FileText, ImageIcon, Plus, Link } from "lucide-react";
 
 const AddProduct = () => {
-  // State variables for form inputs
-  const [productType, setProductType] = useState<"Physical" | "Digital">("Physical"); // Dropdown for product type
-  const [productName, setProductName] = useState(""); // Product name
-  const [productPrice, setProductPrice] = useState(""); // Product price
-  const [productQuantity, setProductQuantity] = useState(""); // Quantity (for physical products)
-  const [downloadLink, setDownloadLink] = useState(""); // Download link (for digital products)
-  const [productDescription, setProductDescription] = useState(""); // Product description
-  const [productImages, setProductImages] = useState<File[]>([]); // Product images (up to 6)
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
+  const [productName, setProductName] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productQuantity, setProductQuantity] = useState("");
+  const [downloadLink, setDownloadLink] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        navigate("/login");
+      }
+    };
+    
+    checkUser();
+  }, [navigate]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,8 +47,8 @@ const AddProduct = () => {
     setIsLoading(true);
 
     try {
-      const user = supabase.auth.user();
-      if (!user) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session?.user) {
         toast({
           title: "Not Authenticated",
           description: "Please log in to add a product.",
@@ -46,11 +58,13 @@ const AddProduct = () => {
         return;
       }
 
+      const userId = sessionData.session.user.id;
+
       // Fetch the storeId for the logged-in user
       const { data: storeData, error: storeError } = await supabase
         .from("stores")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .single();
 
       if (storeError || !storeData) {
@@ -64,7 +78,7 @@ const AddProduct = () => {
       for (const image of productImages) {
         const { data, error } = await supabase.storage
           .from("product-images")
-          .upload(`${user.id}/${Date.now()}-${image.name}`, image);
+          .upload(`${userId}/${Date.now()}-${image.name}`, image);
 
         if (error) {
           throw error;
@@ -82,8 +96,8 @@ const AddProduct = () => {
         .from("products")
         .insert([
           {
-            user_id: user.id,
-            store_id: storeId, // Use the fetched storeId
+            user_id: userId,
+            store_id: storeId,
             name: productName,
             price: parseFloat(productPrice),
             quantity: productType === "Physical" ? parseInt(productQuantity) : null,
@@ -259,10 +273,10 @@ const AddProduct = () => {
                 className="hidden"
                 id="productImages"
               />
-              <Button as="label" htmlFor="productImages" variant="outline" size="sm">
+              <label htmlFor="productImages" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Images
-              </Button>
+              </label>
               <p className="text-xs text-gray-500 mt-2">{productImages.length}/6 images uploaded</p>
             </div>
           </div>

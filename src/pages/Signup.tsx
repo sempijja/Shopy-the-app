@@ -45,12 +45,8 @@ const Signup = () => {
         password,
         options: {
           data: {
-<<<<<<< HEAD
             full_name: name, // Store the user's full name in the database
             onboarding_completed: false, // Set onboarding status to false
-=======
-            full_name: name,
->>>>>>> e09ac90f912ce0711c4803100db1a45f8f893982
           },
           emailRedirectTo: `${window.location.origin}/store-setup`, // Redirect to store setup after confirmation
         },

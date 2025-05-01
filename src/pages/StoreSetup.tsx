@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Toggle } from "@/components/ui/toggle";
 import { supabase } from "@/lib/supabase";
-import { Building } from "lucide-react";
+import { Building, Heart, Home, Monitor, ShoppingCart, Cake, Palette, Book, Dumbbell, Gamepad, Leaf, Dog, Diamond, Footprints , Gift, Calendar, Briefcase, FileText } from "lucide-react";
 
 const INDUSTRY_ICONS = {
-  "Fashion & Apparel": Building,
-  // Add other industries here...
+  "Apparel & Accessories": Building,
+  "Health & Beauty": Heart,
+  "Home & Living": Home,
+  "Electronics & Gadgets": Monitor,
+  "Groceries & Essentials": ShoppingCart,
+  "Bakery & Confectionery": Cake,
+  "Art & Crafts": Palette,
+  "Books & Media": Book,
+  "Sports & Fitness": Dumbbell,
+  "Toys & Games": Gamepad,
+  "Garden & Outdoor": Leaf,
+  "Pets & Pet Supplies": Dog,
+  "Jewelry & Watches": Diamond,
+  "Footwear": Footprints,
+  "Gifts & Souvenirs": Gift,
+  "Event Supplies": Calendar,
+  "Office Supplies": Briefcase,
+  "Digital Products": FileText,
 };
 
 const INDUSTRIES = Object.keys(INDUSTRY_ICONS);

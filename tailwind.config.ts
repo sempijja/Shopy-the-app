@@ -7,6 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+		"./.storybook/**/*.{js,ts,jsx,tsx}", // Include Storybook files
 	],
 	prefix: "",
 	theme: {

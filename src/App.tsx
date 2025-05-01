@@ -13,6 +13,20 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
+import { supabase } from './lib/supabase';
+import { toast } from './hooks/use-toast';
+
+// Function to verify Supabase connection
+const verifySBConnection = async () => {
+  try {
+    // Simple query to check connection
+    const { data, error } = await supabase.from('_dummy_query').select('*').limit(1);
+    if (error) throw error;
+    console.log("Supabase connection verified successfully");
+  } catch (error) {
+    console.error("Supabase connection error:", error);
+  }
+};
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -138,21 +152,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/store-setup" element={<StoreSetup />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </TooltipProvider>
+    <>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/store-setup" element={
+            <ProtectedRoute>
+              <StoreSetup />
+            </ProtectedRoute>
+          } />
+          <Route path="/add-product" element={
+            <StoreRequiredRoute>
+              <AddProduct />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/dashboard" element={
+            <StoreRequiredRoute>
+              <Dashboard />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </TooltipProvider>
+    </>
   );
 };
 

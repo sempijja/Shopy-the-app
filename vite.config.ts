@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   // Base path for GitHub Pages deployment
   base: mode === 'production' ? '/shopy-the-app/' : '/',
   server: {
-    port: 8080,
+    port: 3000,
     strictPort: true, // Fail if port is already in use
     host: true, // Listen on all IPv4 interfaces
     cors: true, // Enable CORS for all requests

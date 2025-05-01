@@ -11,15 +11,8 @@ import StoreSetup from "./pages/StoreSetup";
 import AddProduct from "./pages/AddProduct";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-<<<<<<< HEAD
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
-=======
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import { supabase, verifySBConnection } from "./lib/supabase";
-import { toast } from "@/hooks/use-toast";
->>>>>>> e09ac90f912ce0711c4803100db1a45f8f893982
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -152,31 +145,11 @@ const App: React.FC = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-<<<<<<< HEAD
         <Route path="/store-setup" element={<StoreSetup />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-=======
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/store-setup" element={
-          <ProtectedRoute>
-            <StoreSetup />
-          </ProtectedRoute>
-        } />
-        <Route path="/add-product" element={
-          <ProtectedRoute>
-            <AddProduct />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <StoreRequiredRoute>
-            <Dashboard />
-          </StoreRequiredRoute>
-        } />
->>>>>>> e09ac90f912ce0711c4803100db1a45f8f893982
         <Route path="*" element={<NotFound />} />
       </Routes>
     </TooltipProvider>

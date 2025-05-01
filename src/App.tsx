@@ -11,6 +11,8 @@ import StoreSetup from "./pages/StoreSetup";
 import AddProduct from "./pages/AddProduct";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import ResetPassword from './pages/ResetPassword';
+import ForgotPassword from './pages/ForgotPassword';
 
 const App: React.FC = () => {
   return (
@@ -24,6 +26,8 @@ const App: React.FC = () => {
         <Route path="/store-setup" element={<StoreSetup />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </TooltipProvider>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, fetchUserMetadata } from "@/lib/supabase";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
@@ -18,29 +18,52 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    try {
-      const credentials = loginMethod === "email" 
-        ? { email: identifier, password }
-        : { phone: identifier, password };
 
-      console.log('Attempting login with:', credentials);
-      
+    try {
+      const credentials =
+        loginMethod === "email"
+          ? { email: identifier, password }
+          : { phone: identifier, password };
+
+      console.log("Attempting login with:", credentials);
+
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
 
       if (error) {
-        console.error('Login error details:', error);
+        console.error("Login error details:", error);
+
+        // Specific handling for unverified email
+        if (error.message.includes("Email not confirmed")) {
+          toast({
+            title: "Email Not Verified",
+            description: "Please check your inbox and verify your email before logging in.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
         throw error;
       }
 
-      console.log('Login successful:', data);
+      console.log("Login successful:", data);
+
+      // Fetch user metadata
+      const userId = data.session.user.id;
+      const metadata = await fetchUserMetadata(userId);
+
+      if (!metadata?.onboarding_completed) {
+        // Redirect to onboarding process
+        navigate("/store-setup");
+      } else {
+        // Redirect to dashboard
+        navigate("/dashboard");
+      }
 
       toast({
         title: "Success!",
         description: "You have successfully logged in.",
       });
-      
-      navigate("/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
       toast({

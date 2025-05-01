@@ -41,10 +41,12 @@ const Signup = () => {
           : { phone: identifier, password };
 
       const { data, error } = await supabase.auth.signUp({
-        ...credentials,
+        email: identifier,
+        password,
         options: {
           data: {
             full_name: name, // Store the user's full name in the database
+            onboarding_completed: false, // Set onboarding status to false
           },
           emailRedirectTo: `${window.location.origin}/login`, // Redirect URL for email verification
         },
@@ -112,7 +114,7 @@ const Signup = () => {
 
             {/* Full name input */}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Full Names</Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <User className="h-5 w-5 text-gray-400" />

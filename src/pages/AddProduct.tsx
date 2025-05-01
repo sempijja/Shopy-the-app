@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Package, DollarSign, FileText, ImageIcon, Plus, Link } from "lucide-react";
+import { Package, Banknote, FileText, ImageIcon, Plus, Link } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
 
 const AddProduct = () => {
   // State variables for form inputs
@@ -97,11 +99,22 @@ const AddProduct = () => {
         throw error;
       }
 
+      // Mark onboarding as completed
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ onboarding_completed: true })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
       toast({
         title: "Product added!",
         description: "Your product has been added successfully.",
       });
 
+      // Redirect to the dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error("Product creation error:", error);
@@ -181,14 +194,14 @@ const AddProduct = () => {
             <Label htmlFor="productPrice">Price</Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <DollarSign className="h-5 w-5 text-gray-400" />
+                <Banknote className="h-5 w-5 text-gray-400" />
               </div>
               <Input
                 id="productPrice"
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="29.99"
+                placeholder="0.00"
                 value={productPrice}
                 onChange={(e) => setProductPrice(e.target.value)}
                 className="pl-10"
@@ -236,7 +249,7 @@ const AddProduct = () => {
             <Label htmlFor="productDescription">Description</Label>
             <Textarea
               id="productDescription"
-              placeholder="Describe your product..."
+              placeholder="Say something about this product..."
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
               rows={4}

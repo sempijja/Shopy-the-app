@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,14 @@ const StoreSetup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = supabase.auth.user();
-    if (!user) {
-      navigate("/login");
-    }
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        navigate("/login");
+      }
+    };
+    
+    checkUser();
   }, [navigate]);
 
   const handleIndustryToggle = (industry: string) => {
@@ -61,8 +66,8 @@ const StoreSetup = () => {
     setIsLoading(true);
 
     try {
-      const user = supabase.auth.user();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         toast({
           title: "Not Authenticated",
           description: "Please log in to set up your store.",
@@ -76,7 +81,7 @@ const StoreSetup = () => {
         .from("stores")
         .insert([
           {
-            user_id: user.id,
+            user_id: session.user.id,
             store_name: storeName,
             industries: selectedIndustries,
           },

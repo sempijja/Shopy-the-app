@@ -1,4 +1,4 @@
-// Import necessary libraries and components
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,14 @@ import { supabase } from "@/lib/supabase";
 
 const Signup = () => {
   // State variables to manage form inputs and UI behavior
-  const [name, setName] = useState(""); // Full name of the user
-  const [identifier, setIdentifier] = useState(""); // Email or phone number based on signup method
-  const [password, setPassword] = useState(""); // Password input
-  const [confirmPassword, setConfirmPassword] = useState(""); // Confirm password input
-  const [showPassword, setShowPassword] = useState(false); // Toggle to show/hide password
-  const [isLoading, setIsLoading] = useState(false); // Loading state for form submission
-  const [signupMethod, setSignupMethod] = useState<"email" | "phone">("email"); // Signup method (email or phone)
-  const navigate = useNavigate(); // Navigation hook for redirecting users
+  const [name, setName] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [signupMethod, setSignupMethod] = useState<"email" | "phone">("email");
+  const navigate = useNavigate();
 
   // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,10 +45,14 @@ const Signup = () => {
         password,
         options: {
           data: {
+<<<<<<< HEAD
             full_name: name, // Store the user's full name in the database
             onboarding_completed: false, // Set onboarding status to false
+=======
+            full_name: name,
+>>>>>>> e09ac90f912ce0711c4803100db1a45f8f893982
           },
-          emailRedirectTo: `${window.location.origin}/login`, // Redirect URL for email verification
+          emailRedirectTo: `${window.location.origin}/store-setup`, // Redirect to store setup after confirmation
         },
       });
 
@@ -60,13 +64,14 @@ const Signup = () => {
       if (signupMethod === "email") {
         toast({
           title: "Account created!",
-          description: "Please check your email for verification.",
+          description: "Please check your email for verification. You must verify your email before logging in.",
         });
         navigate("/login");
       } else {
+        // Phone verification
         toast({
           title: "Account created!",
-          description: "Your account has been created successfully.",
+          description: "Your account has been created. You'll receive a verification SMS shortly.",
         });
         navigate("/store-setup");
       }

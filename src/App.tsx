@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,8 +13,29 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import { supabase, verifySBConnection } from "./lib/supabase";
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // Check Supabase connection on app start
+    if (import.meta.env.DEV) {
+      verifySBConnection();
+      
+      // Log auth state for debugging
+      const checkAuth = async () => {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (error) throw error;
+          console.log("Auth status:", data?.session ? "Authenticated" : "Not authenticated");
+        } catch (err) {
+          console.error("Auth check failed:", err);
+        }
+      };
+      
+      checkAuth();
+    }
+  }, []);
+
   return (
     <TooltipProvider>
       <Toaster />

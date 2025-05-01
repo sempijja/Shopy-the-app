@@ -28,3 +28,6 @@ dist-ssr
 src/stories
 *storybook.log
 src/pages/AddProduct.stories.tsx
+
+# Environment variables
+.env

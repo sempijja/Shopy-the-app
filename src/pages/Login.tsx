@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,18 @@ const Login = () => {
 
       if (error) {
         console.error('Login error details:', error);
+        
+        // Specific handling for unverified email
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email Not Verified",
+            description: "Please check your inbox and verify your email before logging in.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
         throw error;
       }
 
@@ -40,7 +53,20 @@ const Login = () => {
         description: "You have successfully logged in.",
       });
       
-      navigate("/dashboard");
+      // Check if the user has a store already set up
+      const { data: storeData } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("user_id", data.session.user.id)
+        .maybeSingle();
+
+      if (!storeData) {
+        // If no store exists, redirect to store setup
+        navigate("/store-setup");
+      } else {
+        // If store exists, redirect to dashboard
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       toast({

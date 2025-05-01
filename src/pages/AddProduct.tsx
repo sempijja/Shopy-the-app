@@ -85,11 +85,11 @@ const AddProduct = () => {
           throw error;
         }
 
-        const publicUrl = supabase.storage
+        const publicUrlData = supabase.storage
           .from("product-images")
-          .getPublicUrl(data.path).publicUrl;
+          .getPublicUrl(data.path);
 
-        uploadedImageUrls.push(publicUrl);
+        uploadedImageUrls.push(publicUrlData.data.publicUrl);
       }
 
       // Insert product details into the database
@@ -116,7 +116,7 @@ const AddProduct = () => {
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ onboarding_completed: true })
-        .eq("id", user.id);
+        .eq("id", userId);
 
       if (updateError) {
         throw updateError;

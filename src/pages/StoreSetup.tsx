@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Toggle } from "@/components/ui/toggle";
 import { supabase } from "@/lib/supabase";
-import { Building, Heart, Home, Monitor, ShoppingCart, Cake, Palette, Book, Dumbbell, Gamepad, Leaf, Dog, Diamond, Footprints , Gift, Calendar, Briefcase, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  Building, Heart, Home, Monitor, ShoppingCart, 
+  Cake, Palette, Book, Dumbbell, Gamepad, 
+  Leaf, Dog, Diamond, Footprints, Gift, 
+  Calendar, Briefcase, FileText 
+} from "lucide-react";
 
 const INDUSTRY_ICONS = {
   "Apparel & Accessories": Building,
@@ -125,60 +132,88 @@ const StoreSetup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="w-full max-w-md mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Set Up Your Store</h1>
-          <p className="mt-2 text-gray-600">Tell us about your business</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <Card className="border-none shadow-lg">
+          <CardHeader className="text-center space-y-2 pb-6">
+            <CardTitle className="text-3xl font-bold text-gray-900">Set Up Your Store</CardTitle>
+            <CardDescription className="text-lg text-gray-600">Tell us about your business</CardDescription>
+          </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="storeName">Store Name</Label>
-              <Input
-                id="storeName"
-                type="text"
-                placeholder="My Awesome Store"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                required
-              />
-            </div>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-6">
+                {/* Store Name Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="storeName" className="text-base font-medium">
+                    Store Name
+                  </Label>
+                  <Input
+                    id="storeName"
+                    type="text"
+                    placeholder="My Awesome Store"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    required
+                    className="h-12"
+                  />
+                </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label>Industry</Label>
-                <Badge variant="outline">{selectedIndustries.length}/3 selected</Badge>
+                {/* Industry Selection */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-base font-medium">Industry</Label>
+                    <Badge variant="outline" className="bg-white text-sm py-1">
+                      {selectedIndustries.length}/3 selected
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-sm text-gray-500">
+                    Select up to 3 industries that best describe your business
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {INDUSTRIES.map((industry) => {
+                      const IconComponent = INDUSTRY_ICONS[industry];
+                      const isSelected = selectedIndustries.includes(industry);
+
+                      return (
+                        <Toggle
+                          key={industry}
+                          pressed={isSelected}
+                          onPressedChange={() => handleIndustryToggle(industry)}
+                          variant="outline"
+                          className={`flex flex-col items-center justify-center h-24 text-center gap-2 p-2 border border-gray-200 hover:bg-secondary/50 transition-all ${
+                            isSelected 
+                              ? "bg-secondary border-primary shadow-sm" 
+                              : "bg-white"
+                          }`}
+                        >
+                          <IconComponent 
+                            className={`w-6 h-6 ${isSelected ? "text-primary" : "text-gray-500"}`} 
+                          />
+                          <span className="text-xs font-medium line-clamp-2">
+                            {industry}
+                          </span>
+                        </Toggle>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {INDUSTRIES.map((industry) => {
-                  const IconComponent = INDUSTRY_ICONS[industry];
-                  const isSelected = selectedIndustries.includes(industry);
-
-                  return (
-                    <Toggle
-                      key={industry}
-                      pressed={isSelected}
-                      onPressedChange={() => handleIndustryToggle(industry)}
-                    >
-                      <IconComponent />
-                      <span>{industry}</span>
-                    </Toggle>
-                  );
-                })}
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  disabled={isLoading || !storeName || selectedIndustries.length === 0}
+                  className="w-full h-12 text-base"
+                >
+                  {isLoading ? "Creating store..." : "Create Store"}
+                </Button>
               </div>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading || !storeName || selectedIndustries.length === 0}
-          >
-            {isLoading ? "Creating store..." : "Create Store"}
-          </Button>
-        </form>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

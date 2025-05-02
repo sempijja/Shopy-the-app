@@ -15,6 +15,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// Make sure we have the root element
 const container = document.getElementById('root')
 if (!container) throw new Error('Failed to find the root element')
 const root = createRoot(container)
@@ -22,7 +23,7 @@ const root = createRoot(container)
 console.log("App is starting...");
 
 // Register service worker
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/serviceWorker.js')
       .then(registration => {

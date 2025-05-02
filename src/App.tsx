@@ -166,33 +166,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/store-setup" element={
-          <ProtectedRoute>
-            <StoreSetup />
-          </ProtectedRoute>
-        } />
-        <Route path="/add-product" element={
-          <StoreRequiredRoute>
-            <AddProduct />
-          </StoreRequiredRoute>
-        } />
-        <Route path="/dashboard" element={
-          <StoreRequiredRoute>
-            <Dashboard />
-          </StoreRequiredRoute>
-        } />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+    <React.StrictMode>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/store-setup" element={
+            <ProtectedRoute>
+              <StoreSetup />
+            </ProtectedRoute>
+          } />
+          <Route path="/add-product" element={
+            <StoreRequiredRoute>
+              <AddProduct />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/dashboard" element={
+            <StoreRequiredRoute>
+              <Dashboard />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </TooltipProvider>
+    </React.StrictMode>
   );
 };
 

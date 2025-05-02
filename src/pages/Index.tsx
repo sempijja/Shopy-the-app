@@ -1,13 +1,25 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '../lib/supabase';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { fill } from '@cloudinary/url-gen/actions/resize';
 
 const Index = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  // Initialize Cloudinary
+  const cld = new Cloudinary({
+    cloud: {
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, // Replace with your Cloudinary cloud name
+    },
+  });
+
+  // Generate a responsive image URL
+  const illustration = cld.image('Illustration_u3jd3p'); // Public ID
+  illustration.resize(fill().width(256).height(256)); // Resize to 256x256 pixels
 
   useEffect(() => {
     const checkSession = async () => {
@@ -45,46 +57,46 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-white px-6 py-10">
-      {/* Main content */}
-      <div className="space-y-12 mt-8">
-        {/* Heading with highlighted text */}
-        <h1 className="text-4xl font-bold leading-tight tracking-tighter">
+    <div className="min-h-screen flex flex-col lg:flex-row justify-between bg-white px-6 py-10 lg:px-20 lg:py-16">
+      {/* Left Section */}
+      <div className="flex flex-col justify-center space-y-6 lg:w-1/2">
+        {/* Header Section */}
+        <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tighter text-center lg:text-left">
           Turn <span className="text-primary">viewers</span> <br />into buyers.
         </h1>
 
-        {/* Illustration */}
-        <div className="flex justify-center py-6">
-          <img 
-            src="/lovable-uploads/938b7c19-16c3-4939-ae2f-1e90158b4092.png" 
-            alt="Discount coupon illustration" 
-            className="w-64 h-auto" 
-          />
-        </div>
-
-        {/* Subtitle */}
-        <p className="text-lg text-center font-medium">
+        {/* Subtitle Section */}
+        <p className="text-lg lg:text-xl text-center lg:text-left font-medium">
           Set up your store and start taking<br />orders immediately
         </p>
+
+        {/* Action Buttons Section */}
+        <div className="space-y-4">
+          <Button 
+            className="w-full lg:w-auto py-6 text-lg rounded-xl" 
+            onClick={() => navigate('/login')}
+          >
+            Log in
+          </Button>
+          
+          <div className="text-center lg:text-left">
+            <button 
+              className="text-primary font-medium text-lg"
+              onClick={() => navigate('/signup')}
+            >
+              Sign up
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="space-y-4 mt-auto">
-        <Button 
-          className="w-full py-6 text-lg rounded-xl" 
-          onClick={() => navigate('/login')}
-        >
-          Log in
-        </Button>
-        
-        <div className="text-center">
-          <button 
-            className="text-primary font-medium text-lg"
-            onClick={() => navigate('/signup')}
-          >
-            Sign up
-          </button>
-        </div>
+      {/* Right Section */}
+      <div className="flex justify-center items-center lg:w-1/2">
+        <img 
+          src={illustration.toURL()} 
+          alt="Discount coupon illustration" 
+          className="w-64 lg:w-96 h-auto" 
+        />
       </div>
     </div>
   );

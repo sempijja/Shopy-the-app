@@ -85,11 +85,6 @@ const Index = () => {
             Sign up
           </button>
         </div>
-
-        {/* Bottom indicator bar */}
-        <div className="flex justify-center mt-4">
-          <div className="h-1 w-12 bg-black rounded-full"></div>
-        </div>
       </div>
     </div>
   );

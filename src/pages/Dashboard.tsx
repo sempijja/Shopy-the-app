@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -7,7 +6,11 @@ import {
   Package, 
   Bell, 
   User,
-  Menu
+  ChevronRight,
+  ArrowDown,
+  ArrowUp,
+  Truck,
+  Box
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -37,6 +40,28 @@ import {
   SidebarMenuButton,
   SidebarProvider
 } from "@/components/ui/sidebar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip
+} from "recharts";
+import { 
+  ChartContainer, 
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -61,64 +86,174 @@ const Dashboard = () => {
     { id: "profile", label: "Profile", icon: User },
   ];
 
+  // Mock data for sales chart
+  const salesData = [
+    { day: "M", sales: 5 },
+    { day: "T", sales: 17 },
+    { day: "W", sales: 5 },
+    { day: "T", sales: 55 },
+    { day: "F", sales: 30 },
+    { day: "S", sales: 42 },
+    { day: "S", sales: 3 },
+  ];
+
+  // Mock data for top products
+  const topProducts = [
+    { id: 1, name: "Premium T-shirt", pcs: 42, amount: 1680 },
+    { id: 2, name: "Designer Jeans", pcs: 38, amount: 3420 },
+    { id: 3, name: "Wireless Earbuds", pcs: 27, amount: 2430 },
+    { id: 4, name: "Leather Wallet", pcs: 25, amount: 1250 },
+    { id: 5, name: "Fitness Tracker", pcs: 23, amount: 2070 },
+  ];
+
+  // Chart configuration
+  const chartConfig = {
+    sales: {
+      color: "#9b87f5",
+      theme: {
+        light: "#9b87f5",
+        dark: "#9b87f5",
+      },
+      label: "Sales",
+    },
+  };
+
   const renderTabContent = (tabId) => {
     switch (tabId) {
       case "home":
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Charz Store</h2>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="text-muted-foreground">Last 7 days</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex flex-col">
+                    <div className="flex items-center">
+                      <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
+                      <span className="text-muted-foreground text-sm">Sales</span>
+                    </div>
+                    <div className="text-2xl font-bold">30,000</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex flex-col">
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
+                      <span className="text-muted-foreground text-sm">Orders</span>
+                    </div>
+                    <div className="text-2xl font-bold">20</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="h-72 w-full">
+              <ChartContainer config={chartConfig} className="h-full">
+                <LineChart data={salesData}>
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <CartesianGrid vertical={false} stroke="#eee" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="sales" 
+                    stroke="#9b87f5" 
+                    strokeWidth={2} 
+                    dot={{ r: 4, fill: "#9b87f5" }}
+                    activeDot={{ r: 6, fill: "#9b87f5" }}
+                    name="sales"
+                  />
+                </LineChart>
+              </ChartContainer>
+            </div>
+
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Today's Sales</CardTitle>
-                <CardDescription>Your store's performance today</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
+                <CardTitle className="text-lg">Sales Summary</CardTitle>
+                <Button variant="ghost" className="text-primary p-1 h-auto">
+                  <span className="mr-1">Expand</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$0.00</div>
-                <p className="text-muted-foreground text-sm">No orders yet today</p>
+              <CardContent className="p-4 pt-0">
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="py-2 pl-0">
+                        <div className="flex items-center gap-2">
+                          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                          <span>Orders</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-right">Value</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="py-2 pl-0">
+                        <div className="flex items-center gap-2">
+                          <Truck className="h-4 w-4 text-muted-foreground" />
+                          <span>Delivered</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-right">Value</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="py-2 pl-0">
+                        <div className="flex items-center gap-2">
+                          <Box className="h-4 w-4 text-muted-foreground" />
+                          <span>Pick-ups</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-right">Value</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Quick Actions</CardTitle>
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-lg">Top products sold</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
-                  <Package className="h-5 w-5" />
-                  <span>Add Product</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>View Orders</span>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Store Completion</CardTitle>
-                <CardDescription>Complete these steps to set up your store</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                      <span>Complete your profile</span>
-                    </div>
-                    <Button variant="ghost" size="sm">Do it</Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Package className="h-4 w-4 text-primary" />
-                      </div>
-                      <span>Add your first product</span>
-                    </div>
-                    <Button variant="ghost" size="sm">Do it</Button>
-                  </div>
-                </div>
+              <CardContent className="p-4 pt-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="pl-0 py-2">Product</TableHead>
+                      <TableHead className="text-right py-2">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="py-2 pl-0">
+                          <div>
+                            {product.name}
+                            <div className="text-xs text-muted-foreground">
+                              Pcs {product.pcs}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">${product.amount}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>

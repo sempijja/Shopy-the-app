@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -166,7 +165,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <React.StrictMode>
+    <>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -194,7 +193,7 @@ const App: React.FC = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
-    </React.StrictMode>
+    </>
   );
 };
 

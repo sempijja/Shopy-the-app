@@ -1,22 +1,20 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '../lib/supabase';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(true);
-  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkSession = async () => {
       try {
+        // Check if the user session exists before making unnecessary calls
         const { data } = await supabase.auth.getSession();
-        if (data?.session) {
+        if (data?.session?.user) {
           setUser(data.session.user);
-          // Will be redirected to dashboard below
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
@@ -28,7 +26,7 @@ const Index = () => {
     checkSession();
   }, []);
 
-  // While checking auth state, show a loading state
+  // Optimize loading state by avoiding unnecessary renders
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -40,12 +38,11 @@ const Index = () => {
     );
   }
 
-  // If user is logged in, redirect to dashboard
+  // Redirect user immediately if authenticated
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // If user is not logged in, show welcome screen with login/signup options
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
       <div className="w-full max-w-md space-y-8">
@@ -55,18 +52,10 @@ const Index = () => {
         </div>
         
         <div className="space-y-4">
-          <Button 
-            className="w-full py-6 text-lg" 
-            onClick={() => navigate('/login')}
-          >
+          <Button className="w-full py-6 text-lg" onClick={() => navigate('/login')}>
             Log In
           </Button>
-          
-          <Button 
-            variant="outline" 
-            className="w-full py-6 text-lg" 
-            onClick={() => navigate('/signup')}
-          >
+          <Button variant="outline" className="w-full py-6 text-lg" onClick={() => navigate('/signup')}>
             Sign Up
           </Button>
         </div>

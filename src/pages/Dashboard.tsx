@@ -106,16 +106,17 @@ const Dashboard = () => {
     { id: 5, name: "Fitness Tracker", pcs: 23, amount: 2070 },
   ];
 
-  // Chart configuration
+  // Fix the chart configuration to match expected type
   const chartConfig = {
-    sales: {
-      color: "#9b87f5",
-      theme: {
-        light: "#9b87f5",
-        dark: "#9b87f5",
-      },
-      label: "Sales",
-    },
+    series: {
+      sales: {
+        label: "Sales",
+        theme: {
+          light: "#9b87f5",
+          dark: "#9b87f5",
+        }
+      }
+    }
   };
 
   const renderTabContent = (tabId) => {

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +10,7 @@ import StoreSetup from "./pages/StoreSetup";
 import AddProduct from "./pages/AddProduct";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/NotFound";
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
@@ -193,6 +193,11 @@ const App: React.FC = () => {
           <Route path="/products" element={
             <StoreRequiredRoute>
               <Products />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/product-details" element={
+            <StoreRequiredRoute>
+              <ProductDetails />
             </StoreRequiredRoute>
           } />
           <Route path="/reset-password" element={<ResetPassword />} />

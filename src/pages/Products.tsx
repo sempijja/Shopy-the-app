@@ -23,14 +23,14 @@ const Products = () => {
   const recentProducts = [
     {
       id: 1,
-      name: "Name",
-      status: "Draft",
+      name: "Premium Sneakers",
+      status: "Live",
       image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=2960&auto=format&fit=crop"
     },
     {
       id: 2,
-      name: "Name",
-      status: "Live",
+      name: "Running Shoes",
+      status: "Draft",
       image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=2960&auto=format&fit=crop"
     }
   ];
@@ -45,6 +45,10 @@ const Products = () => {
     if (tab !== "products") {
       navigate(`/${tab}`);
     }
+  };
+  
+  const goToProductDetails = () => {
+    navigate("/product-details");
   };
 
   return (
@@ -77,7 +81,11 @@ const Products = () => {
           <h2 className="text-lg font-medium mb-3">Recently updated products</h2>
           <div className="grid grid-cols-2 gap-4">
             {recentProducts.map((product) => (
-              <div key={product.id} className="rounded-lg overflow-hidden border border-gray-200">
+              <div 
+                key={product.id} 
+                className="rounded-lg overflow-hidden border border-gray-200"
+                onClick={goToProductDetails}
+              >
                 <div className="h-32 bg-gray-200 overflow-hidden">
                   <img 
                     src={product.image} 
@@ -101,7 +109,7 @@ const Products = () => {
 
         {/* All Products */}
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex justify-between items-center mb-3" onClick={goToProductDetails}>
             <h2 className="text-lg font-medium">All products</h2>
             <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
@@ -146,7 +154,10 @@ const Products = () => {
 
       {/* Floating Action Button */}
       <div className="fixed bottom-20 right-4">
-        <button className="bg-primary rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+        <button 
+          className="bg-primary rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
+          onClick={() => navigate('/add-product')}
+        >
           <Plus className="h-6 w-6 text-white" />
         </button>
       </div>

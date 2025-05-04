@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -71,7 +70,7 @@ const Index = () => {
           </p>
         </div>
         
-        <div className="w-full max-w-md space-y-5">
+        <div className="w-full max-w-md space-y-5 pb-10">
           <Button 
             className="w-full py-7 rounded-xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300"
             onClick={() => navigate('/signup')}
@@ -88,19 +87,6 @@ const Index = () => {
           </Button>
         </div>
       </main>
-      
-      {/* Footer */}
-      <footer className="w-full py-8 px-6 border-t border-gray-100">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <ShoppingBag size={24} className="text-primary mr-2" />
-            <span className="font-medium text-lg">Shopy</span>
-          </div>
-          <div className="text-sm text-gray-500">
-            © 2025 Shopy. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

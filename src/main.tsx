@@ -38,7 +38,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename="/Shopy-the-app">
         <App />
       </BrowserRouter>
     </QueryClientProvider>

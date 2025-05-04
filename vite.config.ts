@@ -26,21 +26,46 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#8a3bc2",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: "/",
+        start_url: "/Shopy-the-app/",
         icons: [
           {
-            src: "public/favicons/android-icon-192x192.png",
+            src: "favicons/android-icon-36x36.png",
+            sizes: "36x36",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-48x48.png",
+            sizes: "48x48",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-72x72.png",
+            sizes: "72x72",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-96x96.png",
+            sizes: "96x96",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-144x144.png",
+            sizes: "144x144",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "public/favicons/apple-icon-180x180.png",
-            sizes: "180x180",
+            src: "favicons/android-icon-512x512.png",
+            sizes: "512x512",
             type: "image/png",
           },
           {
-            src: "public/favicons/favicon-96x96.png",
-            sizes: "96x96",
+            src: "favicons/apple-icon-180x180.png",
+            sizes: "180x180",
             type: "image/png",
           },
         ],
@@ -64,17 +89,6 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "api-cache",
               networkTimeoutSeconds: 10,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-              },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/api\.example\.com\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week

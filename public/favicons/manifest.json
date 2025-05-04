@@ -1,5 +1,11 @@
 {
- "name": "App",
+ "name": "Shopy",
+ "short_name": "Shopy",
+ "description": "Your e-commerce solution",
+ "start_url": "/",
+ "display": "standalone",
+ "background_color": "#ffffff",
+ "theme_color": "#8a3bc2",
  "icons": [
   {
    "src": "\/android-icon-36x36.png",

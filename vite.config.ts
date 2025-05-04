@@ -6,7 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
   // Base path for GitHub Pages deployment
-  base: mode === "production" ? "/shopy-the-app/" : "/",
+  base: mode === "production" ? "/Shopy-the-app/" : "/",
   server: {
     port: 8080,
     strictPort: true, // Fail if port is already in use
@@ -64,6 +64,17 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "api-cache",
               networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/api\.example\.com\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week

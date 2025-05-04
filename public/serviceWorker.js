@@ -3,10 +3,10 @@ const CACHE_NAME = "shopy-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "public/manifest.json",
-  "public/favicons/android-icon-192x192.png",
-  "public/favicons/apple-icon-180x180.png",
-  "public/favicons/favicon-96x96.png",
+  "/manifest.json",
+  "/favicons/android-icon-192x192.png",
+  "/favicons/apple-icon-180x180.png",
+  "/favicons/favicon-96x96.png",
   "/src/main.tsx"
 ];
 
@@ -32,6 +32,21 @@ self.addEventListener("fetch", (event) => {
       return response || fetch(event.request);
     })
   );
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.url.startsWith("https://api.example.com")) {
+    event.respondWith(
+      caches.open("api-cache").then((cache) => {
+        return fetch(event.request)
+          .then((response) => {
+            cache.put(event.request, response.clone());
+            return response;
+          })
+          .catch(() => caches.match(event.request));
+      })
+    );
+  }
 });
 
 // Activate the service worker and clean up old caches

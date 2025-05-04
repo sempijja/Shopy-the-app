@@ -57,46 +57,47 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row justify-between bg-white px-6 py-10 lg:px-20 lg:py-16">
-      {/* Left Section */}
-      <div className="flex flex-col justify-center space-y-6 lg:w-1/2">
-        {/* Header Section */}
-        <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tighter text-center lg:text-left">
+    <div className="min-h-screen flex flex-col justify-between bg-white px-6 py-10 lg:px-20 lg:py-16">
+      {/* Header Section */}
+      <div className="text-center lg:text-left">
+        <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tighter">
           Turn <span className="text-primary">viewers</span> <br />into buyers.
         </h1>
-
-        {/* Subtitle Section */}
-        <p className="text-lg lg:text-xl text-center lg:text-left font-medium">
-          Set up your store and start taking<br />orders immediately
-        </p>
-
-        {/* Action Buttons Section */}
-        <div className="space-y-4">
-          <Button 
-            className="w-full lg:w-auto py-6 text-lg rounded-xl" 
-            onClick={() => navigate('/login')}
-          >
-            Log in
-          </Button>
-          
-          <div className="text-center lg:text-left">
-            <button 
-              className="text-primary font-medium text-lg"
-              onClick={() => navigate('/signup')}
-            >
-              Sign up
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Right Section */}
-      <div className="flex justify-center items-center lg:w-1/2">
+      {/* Illustration Section */}
+      <div className="flex justify-center items-center">
         <img 
           src={illustration.toURL()} 
           alt="Discount coupon illustration" 
           className="w-64 lg:w-96 h-auto" 
         />
+      </div>
+
+      {/* Subtitle Section */}
+      <div className="text-center lg:text-left">
+        <p className="text-lg lg:text-xl font-medium">
+          Set up your store and start taking<br />orders immediately
+        </p>
+      </div>
+
+      {/* Action Buttons Section */}
+      <div className="space-y-4 mt-auto">
+        <Button 
+          className="w-full lg:w-auto py-6 text-lg rounded-xl" 
+          onClick={() => navigate('/login')}
+        >
+          Log in
+        </Button>
+        
+        <div className="text-center lg:text-left">
+          <button 
+            className="text-primary font-medium text-lg"
+            onClick={() => navigate('/signup')}
+          >
+            Sign up
+          </button>
+        </div>
       </div>
     </div>
   );

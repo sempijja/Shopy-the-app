@@ -30,6 +30,8 @@ src/stories
 src/pages/AddProduct.stories.tsx
 src/pages/Dashboard.stories.tsx
 src/pages/Index.stories.tsx
+src/pages/Products.stories.tsx
+src/pages/OtpVerification.stories.tsx
 
 # Environment variables
 .env

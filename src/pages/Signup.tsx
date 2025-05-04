@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { formatPhoneNumber } from "@/utils/phoneUtils"; // Import the phone update utility function
 
 const Signup = () => {
   // State variables to manage form inputs and UI behavior
@@ -35,14 +35,16 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
+      // Format phone number if signup method is phone
+      const formattedPhone = signupMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
+
       const credentials =
         signupMethod === "email"
           ? { email: identifier, password }
-          : { phone: identifier, password };
+          : { phone: formattedPhone, password };
 
       const { data, error } = await supabase.auth.signUp({
-        email: identifier,
-        password,
+        ...credentials,
         options: {
           data: {
             full_name: name, // Store the user's full name in the database
@@ -65,11 +67,21 @@ const Signup = () => {
         navigate("/login");
       } else {
         // Phone verification
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          phone: formattedPhone,
+        });
+
+        if (otpError) {
+          console.error("OTP sending error:", otpError);
+          throw otpError;
+        }
+
         toast({
           title: "Account created!",
-          description: "Your account has been created. You'll receive a verification SMS shortly.",
+          description: "An OTP has been sent to your phone. Please verify your account.",
         });
-        navigate("/store-setup");
+
+        navigate("/otp-verification"); // Navigate to the OTP verification screen
       }
     } catch (error: any) {
       toast({
@@ -148,13 +160,12 @@ const Signup = () => {
                 <Input
                   id="identifier"
                   type={signupMethod === "email" ? "email" : "tel"}
-                  placeholder={signupMethod === "email" ? "your@email.com" : "+1234567890"}
+                  placeholder={signupMethod === "email" ? "your@email.com" : "0712345678"}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="pl-10"
                   required
-                  pattern={signupMethod === "phone" ? "^\\+[0-9]{10,15}$" : undefined}
-                  title={signupMethod === "phone" ? "Phone number must start with + and contain 10-15 digits" : undefined}
+                  title={signupMethod === "phone" ? "Phone number must be valid (e.g., 0712345678 or +256712345678)" : undefined}
                 />
               </div>
             </div>

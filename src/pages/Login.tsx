@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
 import { supabase, fetchUserMetadata } from "@/lib/supabase";
+import { formatPhoneNumber } from "@/utils/phoneUtils"; // Import the utility function
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
@@ -20,10 +21,13 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      // Format phone number if login method is phone
+      const formattedPhone = loginMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
+
       const credentials =
         loginMethod === "email"
           ? { email: identifier, password }
-          : { phone: identifier, password };
+          : { phone: formattedPhone, password };
 
       console.log("Attempting login with:", credentials);
 
@@ -50,16 +54,42 @@ const Login = () => {
 
       // Fetch user metadata
       const userId = data.session.user.id;
-      const metadata = await fetchUserMetadata(userId);
 
-      if (!metadata?.onboarding_completed) {
-        // Redirect to onboarding process
+      // Check if the user has a store
+      const { data: storeData, error: storeError } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (storeError || !storeData) {
+        // Redirect to store setup if no store is found
         navigate("/store-setup");
-      } else {
-        // Redirect to dashboard
-        navigate("/dashboard");
+        toast({
+          title: "No Store Found",
+          description: "Please set up your store to continue.",
+        });
+        return;
       }
 
+      // Check if the user has at least one product
+      const { data: productData, error: productError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("store_id", storeData.id);
+
+      if (productError || productData.length === 0) {
+        // Redirect to add product page if no products are found
+        navigate("/add-product");
+        toast({
+          title: "No Products Found",
+          description: "Please add at least one product to your store.",
+        });
+        return;
+      }
+
+      // Redirect to dashboard if everything is set up
+      navigate("/dashboard");
       toast({
         title: "Success!",
         description: "You have successfully logged in.",

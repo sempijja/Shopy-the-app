@@ -1,46 +1,110 @@
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Package, Banknote, FileText, ImageIcon, Plus, Link, X, ChevronLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const ProductDetails = () => {
-  // Mock data for product details
-  const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
-  const [productName, setProductName] = useState("Premium Sneakers");
-  const [productPrice, setProductPrice] = useState("89.99");
-  const [productQuantity, setProductQuantity] = useState("45");
-  const [downloadLink, setDownloadLink] = useState("");
-  const [productDescription, setProductDescription] = useState("High-quality sneakers perfect for running and casual wear. Available in multiple sizes.");
-  const [productImages, setProductImages] = useState<string[]>([
-    "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=2960&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=2960&auto=format&fit=crop"
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { productId } = useParams(); // Get the product ID from the URL
   const navigate = useNavigate();
 
-  // Handle form submission - just a mock for now
+  // State for product details
+  const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
+  const [productName, setProductName] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productQuantity, setProductQuantity] = useState("");
+  const [downloadLink, setDownloadLink] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch product details from Supabase
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch product details
+        const { data: product, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", productId)
+          .single();
+
+        if (error || !product) {
+          throw new Error("Failed to fetch product details.");
+        }
+
+        // Update state with product details
+        setProductType(product.quantity ? "Physical" : "Digital");
+        setProductName(product.name);
+        setProductPrice(product.price.toString());
+        setProductQuantity(product.quantity?.toString() || "");
+        setDownloadLink(product.download_link || "");
+        setProductDescription(product.description || "");
+        setProductImages(product.images || []);
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch product details.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productId]);
+
+  // Handle form submission to update product details
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Update product details in Supabase
+      const { error } = await supabase
+        .from("products")
+        .update({
+          name: productName,
+          price: parseFloat(productPrice),
+          quantity: productType === "Physical" ? parseInt(productQuantity) : null,
+          download_link: productType === "Digital" ? downloadLink : null,
+          description: productDescription,
+          images: productImages,
+        })
+        .eq("id", productId);
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Product updated!",
         description: "Your product has been updated successfully.",
       });
-      setIsLoading(false);
+
       navigate("/products");
-    }, 1000);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update product.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle image uploads
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
     const files = Array.from(e.target.files);
@@ -53,9 +117,33 @@ const ProductDetails = () => {
       return;
     }
 
-    // Create URLs for the new images
-    const newImageUrls = files.map((file) => URL.createObjectURL(file));
-    setProductImages((prev) => [...prev, ...newImageUrls]);
+    try {
+      const uploadedImageUrls: string[] = [];
+      for (const file of files) {
+        const { data, error } = await supabase.storage
+          .from("product-images")
+          .upload(`${productId}/${Date.now()}-${file.name}`, file);
+
+        if (error) {
+          throw error;
+        }
+
+        const publicUrlData = supabase.storage
+          .from("product-images")
+          .getPublicUrl(data.path);
+
+        uploadedImageUrls.push(publicUrlData.data.publicUrl);
+      }
+
+      setProductImages((prev) => [...prev, ...uploadedImageUrls]);
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Remove an image
@@ -76,7 +164,7 @@ const ProductDetails = () => {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="px-4 py-6 space-y-6">
-        {/* Image Upload - Now at the top */}
+        {/* Image Upload */}
         <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center">
           <div className="flex flex-col items-center">
             <div className="p-3 bg-gray-100 rounded-full mb-3">
@@ -92,7 +180,10 @@ const ProductDetails = () => {
               className="hidden"
               id="productImages"
             />
-            <label htmlFor="productImages" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
+            <label
+              htmlFor="productImages"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Upload Images
             </label>

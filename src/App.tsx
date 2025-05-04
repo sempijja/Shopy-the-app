@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -48,6 +48,7 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasStore, setHasStore] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
   
   useEffect(() => {
     // Check Supabase connection on app start
@@ -166,6 +167,23 @@ const App: React.FC = () => {
     
     return <>{children}</>;
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Fallback routing logic
+  if (location.pathname !== "/" && location.pathname !== "/dashboard") {
+    if (isAuthenticated) {
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      return <Navigate to="/" replace />;
+    }
+  }
 
   return (
     <>

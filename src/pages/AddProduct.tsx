@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Package, Banknote, FileText, ImageIcon, Plus, Link } from "lucide-react";
+import { Package, Banknote, FileText, ImageIcon, Plus, Link, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
 
 const AddProduct = () => {
   const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
@@ -158,6 +156,11 @@ const AddProduct = () => {
     setProductImages((prev) => [...prev, ...files]);
   };
 
+  // Remove an image
+  const removeImage = (index: number) => {
+    setProductImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="w-full max-w-md mx-auto space-y-8">
@@ -290,6 +293,26 @@ const AddProduct = () => {
                 Upload Images
               </label>
               <p className="text-xs text-gray-500 mt-2">{productImages.length}/6 images uploaded</p>
+            </div>
+
+            {/* Image Previews */}
+            <div className="mt-4 grid grid-cols-3 gap-4">
+              {productImages.map((image, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-24 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 

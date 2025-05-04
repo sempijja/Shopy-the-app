@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,9 +9,12 @@ import Signup from "./pages/Signup";
 import StoreSetup from "./pages/StoreSetup";
 import AddProduct from "./pages/AddProduct";
 import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/NotFound";
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
+import OtpVerification from './pages/OtpVerification';
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
 
@@ -167,31 +169,44 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/store-setup" element={
-          <ProtectedRoute>
-            <StoreSetup />
-          </ProtectedRoute>
-        } />
-        <Route path="/add-product" element={
-          <StoreRequiredRoute>
-            <AddProduct />
-          </StoreRequiredRoute>
-        } />
-        <Route path="/dashboard" element={
-          <StoreRequiredRoute>
-            <Dashboard />
-          </StoreRequiredRoute>
-        } />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/store-setup" element={
+            <ProtectedRoute>
+              <StoreSetup />
+            </ProtectedRoute>
+          } />
+          <Route path="/add-product" element={
+            <StoreRequiredRoute>
+              <AddProduct />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/dashboard" element={
+            <StoreRequiredRoute>
+              <Dashboard />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/products" element={
+            <StoreRequiredRoute>
+              <Products />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/product-details" element={
+            <StoreRequiredRoute>
+              <ProductDetails />
+            </StoreRequiredRoute>
+          } />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/otp-verification" element={<OtpVerification />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </TooltipProvider>
     </>
   );
 };

@@ -44,37 +44,36 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Logo Header Section */}
-      <div className="flex justify-center pt-12 pb-6">
+      {/* Header */}
+      <header className="w-full px-6 py-8 flex justify-center">
         <div className="flex items-center">
-          <ShoppingBag size={36} className="text-primary mr-2" />
-          <h1 className="text-3xl font-bold">shopy</h1>
+          <ShoppingBag size={40} className="text-primary mr-2" />
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-shopy-700">shopy</h1>
         </div>
-      </div>
+      </header>
       
-      {/* Main Content Section */}
-      <div className="flex-grow flex flex-col items-center justify-center px-6">
-        {/* Illustration */}
-        <div className="w-full max-w-[280px] mb-12">
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 md:px-10 max-w-5xl mx-auto">
+        <div className="w-full max-w-md mx-auto mb-10">
           <img 
             src="/lovable-uploads/2e884567-b327-4b68-a546-aea4e962d6ed.png" 
             alt="Store illustration" 
-            className="w-full h-auto"
+            className="w-full h-auto object-contain drop-shadow-xl"
           />
         </div>
         
-        {/* Call to Action Text */}
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">
-          Try Shopy for free
-        </h2>
-        <p className="text-lg text-gray-600 text-center mb-12 max-w-md">
-          The commerce platform trusted by millions of businesses worldwide
-        </p>
+        <div className="text-center mb-12 w-full max-w-xl">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-shopy-500">
+            Try Shopy for free
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 max-w-lg mx-auto">
+            The commerce platform trusted by millions of businesses worldwide
+          </p>
+        </div>
         
-        {/* Action Buttons */}
-        <div className="w-full max-w-md space-y-4 px-4">
+        <div className="w-full max-w-md space-y-5">
           <Button 
-            className="w-full py-6 rounded-md text-lg font-medium bg-[#222222] hover:bg-black"
+            className="w-full py-7 rounded-xl text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300"
             onClick={() => navigate('/signup')}
           >
             Get started
@@ -82,24 +81,26 @@ const Index = () => {
           
           <Button 
             variant="outline"
-            className="w-full py-6 rounded-md text-lg font-medium border-gray-200"
+            className="w-full py-7 rounded-xl text-lg font-medium border-gray-200 hover:border-primary/30 hover:bg-secondary/50 transition-all duration-300"
             onClick={() => navigate('/login')}
           >
             Log in
           </Button>
         </div>
-      </div>
+      </main>
       
       {/* Footer */}
-      <div className="py-6 px-4 flex justify-between items-center border-t border-gray-100 mt-10">
-        <div className="flex items-center">
-          <ShoppingBag size={24} className="text-primary mr-1" />
-          <span className="font-medium">Shopy</span>
+      <footer className="w-full py-8 px-6 border-t border-gray-100">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 sm:mb-0">
+            <ShoppingBag size={24} className="text-primary mr-2" />
+            <span className="font-medium text-lg">Shopy</span>
+          </div>
+          <div className="text-sm text-gray-500">
+            © 2025 Shopy. All rights reserved.
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          © 2025
-        </div>
-      </div>
+      </footer>
     </div>
   );
 };

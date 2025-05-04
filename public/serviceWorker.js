@@ -3,10 +3,10 @@ const CACHE_NAME = "shopy-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/manifest.json",
-  "/favicons/android-icon-192x192.png",
-  "/favicons/apple-icon-180x180.png",
-  "/favicons/favicon-96x96.png",
+  "public/manifest.json",
+  "public/favicons/android-icon-192x192.png",
+  "public/favicons/apple-icon-180x180.png",
+  "public/favicons/favicon-96x96.png",
   "/src/main.tsx"
 ];
 

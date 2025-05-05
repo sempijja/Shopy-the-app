@@ -1,4 +1,3 @@
-
 // Cache name with version
 const CACHE_NAME = "shopy-cache-v1";
 
@@ -104,3 +103,8 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+workbox.routing.registerRoute(
+  new RegExp('https://eopoprjgfoyhodjikaeo.supabase.co*'),
+  new workbox.strategies.NetworkOnly()
+);

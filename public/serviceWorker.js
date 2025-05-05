@@ -1,3 +1,6 @@
+// Import Workbox from the CDN
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox-sw.js');
+
 // Cache name with version
 const CACHE_NAME = "shopy-cache-v1";
 
@@ -104,7 +107,11 @@ self.addEventListener('message', (event) => {
   }
 });
 
-workbox.routing.registerRoute(
-  new RegExp('https://eopoprjgfoyhodjikaeo.supabase.co*'),
-  new workbox.strategies.NetworkOnly()
-);
+if (workbox) {
+  workbox.routing.registerRoute(
+    new RegExp('https://eopoprjgfoyhodjikaeo.supabase.co*'),
+    new workbox.strategies.NetworkOnly()
+  );
+} else {
+  console.error('Workbox failed to load.');
+}

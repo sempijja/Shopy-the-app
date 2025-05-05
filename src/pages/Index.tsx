@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,7 @@ const Index = () => {
       {/* Main container with better spacing */}
       <div className="flex flex-col h-full justify-between max-w-md mx-auto w-full">
         {/* Header Section with brand accent */}
-        <div className="mb-8">
+        <div className="mb-8 items-center text-center">
           <h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tighter">
             Turn <span className="text-primary bg-gradient-to-r from-primary to-shopy-600 bg-clip-text text-transparent">viewers</span> <br />
             into <span className="text-shopy-800">buyers.</span>
@@ -81,7 +80,7 @@ const Index = () => {
         </div>
 
         {/* Subtitle with brand styling */}
-        <div className="mb-8">
+        <div className="mb-8 items-center text-center">
           <p className="text-xl font-medium text-gray-700">
             Set up your store and start taking<br />
             orders <span className="text-primary font-semibold">immediately</span>

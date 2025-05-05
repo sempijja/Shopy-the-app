@@ -44,6 +44,7 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_CLOUDINARY_API_SECRET: ${{ secrets.VITE_CLOUDINARY_API_SECRET }}
           VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+          VITE_BASE_URL: ${{ github.ref_name == 'main' && '/' || '/dev/' }}
 
       # Step 5: Debugging - List build output
       - name: List build output
@@ -70,3 +71,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4.0.5
+        with:
+          branch: ${{ github.ref_name }}
+          folder: ${{ github.ref_name == 'main' && '.' || 'dev' }}

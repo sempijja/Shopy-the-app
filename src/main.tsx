@@ -25,7 +25,7 @@ console.log("App is starting...");
 // Register service worker
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/serviceWorker.js')
+    navigator.serviceWorker.register('/Shopy-the-app/serviceWorker.js') // Added the base path
       .then(registration => {
         console.log('Service Worker registered: ', registration);
       })

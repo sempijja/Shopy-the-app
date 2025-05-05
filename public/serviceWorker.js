@@ -107,11 +107,8 @@ self.addEventListener('message', (event) => {
   }
 });
 
-if (workbox) {
-  workbox.routing.registerRoute(
-    new RegExp('https://eopoprjgfoyhodjikaeo.supabase.co*'),
-    new workbox.strategies.NetworkOnly()
-  );
-} else {
-  console.error('Workbox failed to load.');
-}
+// Use Workbox to handle Supabase API requests
+workbox.routing.registerRoute(
+  new RegExp('https://[a-z0-9-]+\\.supabase\\.co/.*'),
+  new workbox.strategies.NetworkOnly()
+);

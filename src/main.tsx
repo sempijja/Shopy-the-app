@@ -25,9 +25,24 @@ console.log("App is starting...");
 // Register service worker
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Shopy-the-app/serviceWorker.js') // Added the base path
+    const swPath = '/Shopy-the-app/serviceWorker.js';
+    console.log(`Registering service worker at path: ${swPath}`);
+    
+    navigator.serviceWorker.register(swPath)
       .then(registration => {
         console.log('Service Worker registered: ', registration);
+        
+        // Check if there's an update and notify user
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('New content is available; please refresh.');
+              }
+            });
+          }
+        });
       })
       .catch(registrationError => {
         console.error('Service Worker registration failed: ', registrationError);

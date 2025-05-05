@@ -92,7 +92,7 @@ const Index = () => {
         <div className="space-y-6 mt-6 mb-8">
           <Button 
             className="w-full py-6 text-lg rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1"
-            onClick={() => navigate('login')}
+            onClick={() => navigate('/login')}
           >
             Log in
           </Button>
@@ -100,7 +100,7 @@ const Index = () => {
           <div className="text-center">
             <button 
               className="text-primary font-medium text-lg transition-all hover:text-shopy-700 hover:underline"
-              onClick={() => navigate('signup')}
+              onClick={() => navigate('/signup')}
             >
               Sign up
             </button>

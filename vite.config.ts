@@ -6,7 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
   // Base path for GitHub Pages deployment
-  base: mode === "production" ? "/shopy-the-app/" : "/",
+  base: mode === "production" ? "/Shopy-the-app/" : "/",
   server: {
     port: 8080,
     strictPort: true, // Fail if port is already in use
@@ -26,21 +26,46 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#8a3bc2",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: "/",
+        start_url: "/Shopy-the-app/",
         icons: [
           {
-            src: "public/favicons/android-icon-192x192.png",
+            src: "favicons/android-icon-36x36.png",
+            sizes: "36x36",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-48x48.png",
+            sizes: "48x48",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-72x72.png",
+            sizes: "72x72",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-96x96.png",
+            sizes: "96x96",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-144x144.png",
+            sizes: "144x144",
+            type: "image/png",
+          },
+          {
+            src: "favicons/android-icon-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "public/favicons/apple-icon-180x180.png",
-            sizes: "180x180",
+            src: "favicons/android-icon-512x512.png",
+            sizes: "512x512",
             type: "image/png",
           },
           {
-            src: "public/favicons/favicon-96x96.png",
-            sizes: "96x96",
+            src: "favicons/apple-icon-180x180.png",
+            sizes: "180x180",
             type: "image/png",
           },
         ],

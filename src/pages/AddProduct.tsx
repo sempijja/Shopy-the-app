@@ -80,6 +80,7 @@ const AddProduct = () => {
           .upload(`${userId}/${Date.now()}-${image.name}`, image);
 
         if (error) {
+          console.error("Image upload error:", error);
           throw error;
         }
 

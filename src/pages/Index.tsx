@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,16 +11,16 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
-  // Initialize Cloudinary
+  // Initialize Cloudinary with error handling
   const cld = new Cloudinary({
     cloud: {
-      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, // Replace with your Cloudinary cloud name
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo', // Fallback to demo if env var is missing
     },
   });
 
-  // Generate a responsive image URL
+  // Generate a responsive image URL with error handling
   const illustration = cld.image('Illustration_u3jd3p'); // Public ID
-  illustration.resize(fill().width(256).height(256)); // Resize to 256x256 pixels
+  illustration.resize(fill().width(400).height(400)); // Resize to 400x400 pixels for better quality
 
   useEffect(() => {
     const checkSession = async () => {
@@ -57,46 +58,53 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-white px-6 py-10 lg:px-20 lg:py-16">
-      {/* Header Section */}
-      <div className="text-center lg:text-left">
-        <h1 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tighter">
-          Turn <span className="text-primary">viewers</span> <br />into buyers.
-        </h1>
-      </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-secondary/20 px-6 py-12">
+      {/* Main container with better spacing */}
+      <div className="flex flex-col h-full justify-between max-w-md mx-auto w-full">
+        {/* Header Section with brand accent */}
+        <div className="mb-8 items-center text-center">
+            <h1 className="text-5xl sm:text-6xl font-bold leading-tight tracking-tighter">
+            Turn <span className="text-primary bg-gradient-to-r from-primary to-shopy-600 bg-clip-text text-transparent">viewers</span> <br />
+            into <span className="text-shopy-800">buyers.</span>
+          </h1>
+        </div>
 
-      {/* Illustration Section */}
-      <div className="flex justify-center items-center">
-        <img 
-          src={illustration.toURL()} 
-          alt="Discount coupon illustration" 
-          className="w-64 lg:w-96 h-auto" 
-        />
-      </div>
+        {/* Centered Illustration with animation and shadow */}
+        <div className="flex justify-center items-center my-8 relative">
+          <div className="absolute w-64 h-64 bg-primary/5 rounded-full filter blur-xl"></div>
+          <img 
+            src={illustration.toURL()} 
+            alt="Discount coupon illustration" 
+            className="w-64 md:w-80 h-auto relative drop-shadow-xl animate-fade-in"
+            style={{ animation: 'fadeIn 1.2s ease-out' }}
+          />
+        </div>
 
-      {/* Subtitle Section */}
-      <div className="text-center lg:text-left">
-        <p className="text-lg lg:text-xl font-medium">
-          Set up your store and start taking<br />orders immediately
-        </p>
-      </div>
+        {/* Subtitle with brand styling */}
+        <div className="mb-8 items-center text-center">
+          <p className="text-xl font-medium text-gray-700">
+            Set up your store and start taking<br />
+            orders <span className="text-primary font-semibold">immediately</span>
+          </p>
+        </div>
 
-      {/* Action Buttons Section */}
-      <div className="space-y-4 mt-auto">
-        <Button 
-          className="w-full lg:w-auto py-6 text-lg rounded-xl" 
-          onClick={() => navigate('/login')}
-        >
-          Log in
-        </Button>
-        
-        <div className="text-center lg:text-left">
-          <button 
-            className="text-primary font-medium text-lg"
-            onClick={() => navigate('/signup')}
+        {/* Action Buttons with improved styling */}
+        <div className="space-y-6 mt-6 mb-8">
+          <Button 
+            className="w-full py-6 text-lg rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1"
+            onClick={() => navigate('login')}
           >
-            Sign up
-          </button>
+            Log in
+          </Button>
+          
+          <div className="text-center">
+            <button 
+              className="text-primary font-medium text-lg transition-all hover:text-shopy-700 hover:underline"
+              onClick={() => navigate('signup')}
+            >
+              Sign up
+            </button>
+          </div>
         </div>
       </div>
     </div>

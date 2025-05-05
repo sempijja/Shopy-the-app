@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
 import { supabase, fetchUserMetadata } from "@/lib/supabase";
-import { formatPhoneNumber } from "@/utils/phoneUtils"; // Import the utility function
+import { formatPhoneNumber } from "@/utils/phoneUtils"; // The utility function
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");

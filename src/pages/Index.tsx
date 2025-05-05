@@ -59,7 +59,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-secondary/20 px-6 py-12">
-      {/* Main container with better spacing */}
+      {/* Main container */}
       <div className="flex flex-col h-full justify-between max-w-md mx-auto w-full">
         {/* Header Section with brand accent */}
         <div className="mb-8 items-center text-center">
@@ -69,7 +69,7 @@ const Index = () => {
           </h1>
         </div>
 
-        {/* Centered Illustration with animation and shadow */}
+        {/*  Illustration with animation and shadow */}
         <div className="flex justify-center items-center my-8 relative">
           <div className="absolute w-64 h-64 bg-primary/5 rounded-full filter blur-xl"></div>
           <img 
@@ -92,7 +92,7 @@ const Index = () => {
         <div className="space-y-6 mt-6 mb-8">
           <Button 
             className="w-full py-6 text-lg rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1"
-            onClick={() => navigate('login')}
+            onClick={() => navigate('/login')}
           >
             Log in
           </Button>
@@ -100,7 +100,7 @@ const Index = () => {
           <div className="text-center">
             <button 
               className="text-primary font-medium text-lg transition-all hover:text-shopy-700 hover:underline"
-              onClick={() => navigate('signup')}
+              onClick={() => navigate('/signup')}
             >
               Sign up
             </button>

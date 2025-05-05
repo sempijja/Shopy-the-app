@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,14 +11,14 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
-  // Initialize Cloudinary
+  // Initialize Cloudinary with error handling
   const cld = new Cloudinary({
     cloud: {
-      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo', // Fallback to demo if env var is missing
     },
   });
 
-  // Generate a responsive image URL
+  // Generate a responsive image URL with error handling
   const illustration = cld.image('Illustration_u3jd3p'); // Public ID
   illustration.resize(fill().width(400).height(400)); // Resize to 400x400 pixels for better quality
 
@@ -91,7 +92,7 @@ const Index = () => {
         <div className="space-y-6 mt-6 mb-8">
           <Button 
             className="w-full py-6 text-lg rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('login')}
           >
             Log in
           </Button>
@@ -99,7 +100,7 @@ const Index = () => {
           <div className="text-center">
             <button 
               className="text-primary font-medium text-lg transition-all hover:text-shopy-700 hover:underline"
-              onClick={() => navigate('/signup')}
+              onClick={() => navigate('signup')}
             >
               Sign up
             </button>

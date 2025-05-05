@@ -62,7 +62,7 @@ const Index = () => {
       <div className="flex flex-col h-full justify-between max-w-md mx-auto w-full">
         {/* Header Section with brand accent */}
         <div className="mb-8 items-center text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tighter">
+            <h1 className="text-5xl sm:text-6xl font-bold leading-tight tracking-tighter">
             Turn <span className="text-primary bg-gradient-to-r from-primary to-shopy-600 bg-clip-text text-transparent">viewers</span> <br />
             into <span className="text-shopy-800">buyers.</span>
           </h1>

@@ -22,10 +22,14 @@ const root = createRoot(container)
 
 console.log("App is starting...");
 
+// Determine the correct base URL for the environment
+const isDevelopment = import.meta.env.MODE === 'development';
+const basePath = isDevelopment ? '' : '/Shopy-the-app';
+
 // Register service worker
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    const swPath = '/Shopy-the-app/serviceWorker.js';
+    const swPath = `${basePath}/serviceWorker.js`;
     console.log(`Registering service worker at path: ${swPath}`);
     
     navigator.serviceWorker.register(swPath)
@@ -53,7 +57,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/Shopy-the-app">
+      <BrowserRouter basename={basePath}>
         <App />
       </BrowserRouter>
     </QueryClientProvider>

@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from "react-router-dom";
@@ -25,6 +24,8 @@ console.log("App is starting...");
 // Determine the correct base URL for the environment
 const isDevelopment = import.meta.env.MODE === 'development';
 const basePath = isDevelopment ? '' : '/Shopy-the-app';
+
+console.log("Base path:", basePath);
 
 // Register service worker
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -57,8 +58,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename={basePath}>
-        <App />
+    <BrowserRouter basename={import.meta.env.MODE === "production" ? "/Shopy-the-app" : "/"}>
+    <App />
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>

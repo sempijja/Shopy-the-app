@@ -5,7 +5,6 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
-  // Base path for GitHub Pages deployment
   base: mode === "production" ? "/Shopy-the-app/" : "/",
   server: {
     port: 8080,

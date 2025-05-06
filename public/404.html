@@ -6,9 +6,14 @@
     <title>Redirecting...</title>
     <script>
       // Redirect to the index.html while preserving the original path
-      window.location.replace(
-        window.location.origin + "/Shopy-the-app/" + window.location.pathname + window.location.search
-      );
+      const basePath = "/Shopy-the-app";
+      const currentPath = window.location.pathname;
+
+      // Prevent infinite loop by checking if the current path is already under the base path
+      if (!currentPath.startsWith(basePath)) {
+        const newUrl = window.location.origin + basePath + currentPath + window.location.search;
+        window.location.replace(newUrl);
+      }
     </script>
   </head>
   <body>

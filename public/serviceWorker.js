@@ -14,7 +14,11 @@ const urlsToCache = [
   `${BASE_PATH}manifest.json`,
   `${BASE_PATH}favicons/android-icon-192x192.png`,
   `${BASE_PATH}favicons/apple-icon-180x180.png`,
-  `${BASE_PATH}favicons/favicon-96x96.png`
+  `${BASE_PATH}favicons/favicon-96x96.png`,
+  `${BASE_PATH}robots.txt`,
+  `${BASE_PATH}placeholder.svg`,
+  `${BASE_PATH}src/main.tsx`,
+  `${BASE_PATH}src/index.css`,
 ];
 
 // Install the service worker
@@ -56,6 +60,12 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   // Ignore non-GET requests and chrome-extension requests
   if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
+  // Ignore requests to the `stories` directory
+  if (event.request.url.includes('/stories/')) {
+    console.log('Ignoring stories file:', event.request.url);
     return;
   }
 
@@ -110,5 +120,28 @@ self.addEventListener('message', (event) => {
 // Use Workbox to handle Supabase API requests
 workbox.routing.registerRoute(
   new RegExp('https://[a-z0-9-]+\\.supabase\\.co/.*'),
-  new workbox.strategies.NetworkOnly()
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'supabase-api-cache',
+    networkTimeoutSeconds: 10,
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 60 * 60 * 24 * 7, // Cache for 1 week
+      }),
+    ],
+  })
+);
+
+// Cache static assets like CSS, JS, and images
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'style' || request.destination === 'script' || request.destination === 'image',
+  new workbox.strategies.CacheFirst({
+    cacheName: 'static-assets-cache',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // Cache for 30 days
+      }),
+    ],
+  })
 );

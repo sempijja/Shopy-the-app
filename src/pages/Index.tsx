@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ const Index = () => {
   // Initialize Cloudinary with error handling
   const cld = new Cloudinary({
     cloud: {
-      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo', // Fallback to demo if env var is missing
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 
     },
   });
 
@@ -92,7 +91,10 @@ const Index = () => {
         <div className="space-y-6 mt-6 mb-8">
           <Button 
             className="w-full py-6 text-lg rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1"
-            onClick={() => navigate('/login')}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/login', { replace: true });
+            }}
           >
             Log in
           </Button>
@@ -100,7 +102,10 @@ const Index = () => {
           <div className="text-center">
             <button 
               className="text-primary font-medium text-lg transition-all hover:text-shopy-700 hover:underline"
-              onClick={() => navigate('/signup')}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/signup', { replace: true });
+              }}
             >
               Sign up
             </button>

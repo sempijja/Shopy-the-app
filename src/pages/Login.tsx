@@ -146,13 +146,12 @@ const Login = () => {
                 <Input
                   id="identifier"
                   type={loginMethod === "email" ? "email" : "tel"}
-                  placeholder={loginMethod === "email" ? "your@email.com" : "+1234567890"}
+                  placeholder={loginMethod === "email" ? "your@email.com" : "0712345678"}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="pl-10"
                   required
-                  pattern={loginMethod === "phone" ? "^\\+[0-9]{10,15}$" : undefined}
-                  title={loginMethod === "phone" ? "Phone number must start with + and contain 10-15 digits" : undefined}
+                  title={loginMethod === "phone" ? "Phone number must be valid (e.g., 0712345678 or +256712345678)" : undefined}
                 />
               </div>
             </div>

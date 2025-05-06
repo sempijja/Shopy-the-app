@@ -44,26 +44,33 @@ const verifySBConnection = async () => {
   }
 };
 
+// Reusable loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+  </div>
+);
+
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [hasStore, setHasStore] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasStore, setHasStore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
-  
+
   useEffect(() => {
     // Check Supabase connection on app start
     if (import.meta.env.DEV) {
       verifySBConnection();
     }
-    
+
     // Set up auth listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth event:", event);
-        
+
         if (event === "SIGNED_IN" && session) {
           setIsAuthenticated(true);
-          
+
           // Check if user has a store
           try {
             const { data: storeData } = await supabase
@@ -71,21 +78,21 @@ const App: React.FC = () => {
               .select("id")
               .eq("user_id", session.user.id)
               .maybeSingle();
-              
+
             setHasStore(!!storeData);
           } catch (error) {
             console.error("Error checking store:", error);
             setHasStore(false);
           }
-          
+
           toast({
             title: "Signed in",
             description: "You have successfully signed in.",
           });
         } else if (event === "SIGNED_OUT") {
           setIsAuthenticated(false);
-          setHasStore(null);
-          
+          setHasStore(false);
+
           toast({
             title: "Signed out",
             description: "You have been signed out.",
@@ -93,24 +100,24 @@ const App: React.FC = () => {
         }
       }
     );
-    
+
     // Check initial session
     const checkSession = async () => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase.auth.getSession();
-        
+
         if (error) throw error;
-        
+
         if (data?.session) {
           setIsAuthenticated(true);
-          
+
           const { data: storeData } = await supabase
             .from("stores")
             .select("id")
             .eq("user_id", data.session.user.id)
             .maybeSingle();
-            
+
           setHasStore(!!storeData);
         } else {
           setIsAuthenticated(false);
@@ -122,68 +129,45 @@ const App: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     checkSession();
-    
+
     return () => {
-      authListener.subscription.unsubscribe();
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, []);
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (isLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-        </div>
-      );
+      return <LoadingSpinner />;
     }
-    
-    if (isAuthenticated === false) {
+
+    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
-    
+
     return <>{children}</>;
   };
 
   // Store setup required route
   const StoreRequiredRoute = ({ children }: { children: React.ReactNode }) => {
     if (isLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-        </div>
-      );
+      return <LoadingSpinner />;
     }
-    
-    if (isAuthenticated === false) {
+
+    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
-    
-    if (hasStore === false) {
+
+    if (!hasStore) {
       return <Navigate to="/store-setup" replace />;
     }
-    
+
     return <>{children}</>;
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Fallback routing logic
-  if (location.pathname !== "/" && location.pathname !== "/dashboard") {
-    if (isAuthenticated) {
-      return <Navigate to="/dashboard" replace />;
-    } else {
-      return <Navigate to="/" replace />;
-    }
-  }
 
   return (
     <>
@@ -222,7 +206,7 @@ const App: React.FC = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/otp-verification" element={<OtpVerification />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />} />
         </Routes>
       </TooltipProvider>
     </>

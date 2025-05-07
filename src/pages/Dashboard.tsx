@@ -345,6 +345,13 @@ const Dashboard = () => {
                 key={item.id} 
                 value={item.id}
                 className="flex flex-col items-center py-2 flex-1 data-[state=active]:bg-transparent"
+                onClick={() => {
+                  if (item.id === "products") {
+                    navigate("/products"); // Navigate to the Products component
+                  } else {
+                    setActiveTab(item.id);
+                  }
+                }}
               >
                 <Icon className="h-5 w-5" />
                 <span className="text-xs mt-1">{item.label}</span>
@@ -370,7 +377,13 @@ const Dashboard = () => {
                 return (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton 
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => {
+                        if (item.id === "products") {
+                          navigate("/products"); // Navigate to the Products component
+                        } else {
+                          setActiveTab(item.id);
+                        }
+                      }}
                       isActive={activeTab === item.id}
                     >
                       <Icon className="mr-2" />

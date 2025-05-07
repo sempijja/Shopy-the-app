@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/NotFound";
+import NewProduct from "@/pages/NewProduct";
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
 import OtpVerification from './pages/OtpVerification';
@@ -203,6 +204,7 @@ const App: React.FC = () => {
               <ProductDetails />
             </StoreRequiredRoute>
           } />
+          <Route path="/new-product" element={<NewProduct />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/otp-verification" element={<OtpVerification />} />

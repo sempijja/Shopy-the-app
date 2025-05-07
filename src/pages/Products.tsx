@@ -172,7 +172,7 @@ const Products = () => {
       <div className="fixed bottom-20 right-4 z-20">
         <button 
           className="bg-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-          onClick={() => navigate('/add-product')}
+          onClick={() => navigate('/new-product')}
         >
           <Plus className="h-6 w-6 text-white" />
         </button>
@@ -198,6 +198,7 @@ const Products = () => {
           onClick={() => handleTabChange('products')} 
           className={`flex flex-col items-center p-2 ${activeTab === 'products' ? 'text-primary' : 'text-gray-500'}`}
         >
+          <Package className="h-5 w-5" />
           <span className="text-xs mt-1 text-primary font-medium">Products</span>
         </button>
         <button 

@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
-import { supabase, fetchUserMetadata } from "@/lib/supabase";
-import { formatPhoneNumber } from "@/utils/phoneUtils"; // The utility function
+import { supabase } from "@/lib/supabase";
+import { formatPhoneNumber } from "@/utils/phoneUtils"; // Utility to format phone numbers
 
 const Login = () => {
+  // State variables for form fields and UI state
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,27 +17,26 @@ const Login = () => {
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const navigate = useNavigate();
 
+  // Handle form submission for login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Format phone number if login method is phone
+      // Format phone number if using phone login
       const formattedPhone = loginMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
 
+      // Prepare credentials based on login method
       const credentials =
         loginMethod === "email"
           ? { email: identifier, password }
           : { phone: formattedPhone, password };
 
-      console.log("Attempting login with:", credentials);
-
+      // Attempt to sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
 
       if (error) {
-        console.error("Login error details:", error);
-
-        // Specific handling for unverified email
+        // Handle unverified email case
         if (error.message.includes("Email not confirmed")) {
           toast({
             title: "Email Not Verified",
@@ -46,56 +46,71 @@ const Login = () => {
           setIsLoading(false);
           return;
         }
-
+        // Show general login error
         throw error;
       }
 
-      console.log("Login successful:", data);
-
-      // Fetch user metadata
+      // Get user ID from session data
       const userId = data.session.user.id;
 
-      // Check if the user has a store
+      // 1. Check if user exists in users table
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (userError || !userData) {
+        toast({
+          title: "Account Not Found",
+          description: "No account found. Please sign up.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Check if the user has a store
       const { data: storeData, error: storeError } = await supabase
         .from("stores")
-        .select("*")
+        .select("id")
         .eq("user_id", userId)
         .single();
 
       if (storeError || !storeData) {
-        // Redirect to store setup if no store is found
         navigate("/store-setup");
         toast({
           title: "No Store Found",
           description: "Please set up your store to continue.",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Check if the user has at least one product
+      // 3. Check if the user has at least one product
       const { data: productData, error: productError } = await supabase
         .from("products")
-        .select("*")
-        .eq("store_id", storeData.id);
+        .select("id")
+        .eq("user_id", userId);
 
-      if (productError || productData.length === 0) {
-        // Redirect to add product page if no products are found
+      if (productError || !productData || productData.length === 0) {
         navigate("/add-product");
         toast({
           title: "No Products Found",
-          description: "Please add at least one product to your store.",
+          description: "Please add at least one product to continue.",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Redirect to dashboard if everything is set up
+      // 4. If user, store, and product exist, redirect to dashboard
       navigate("/dashboard");
       toast({
-        title: "Success!",
+        title: "Logged In!",
         description: "You have successfully logged in.",
       });
     } catch (error: any) {
-      console.error("Login error:", error);
+      // Show error toast for login failure
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials. Please try again.",
@@ -109,13 +124,16 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-md">
+        {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold">Welcome to Shopy</h1>
           <p className="mt-2 text-gray-600">Sign in to your account</p>
         </div>
 
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
+            {/* Toggle between email and phone login */}
             <div className="flex gap-4 mb-4">
               <Button
                 type="button"
@@ -133,6 +151,7 @@ const Login = () => {
               </Button>
             </div>
 
+            {/* Email or Phone Input */}
             <div className="space-y-2">
               <Label htmlFor="identifier">{loginMethod === "email" ? "Email" : "Phone Number"}</Label>
               <div className="relative">
@@ -156,6 +175,7 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Password Input */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -171,6 +191,7 @@ const Login = () => {
                   className="pl-10"
                   required
                 />
+                {/* Toggle password visibility */}
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 flex items-center pr-3"
@@ -186,6 +207,7 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Forgot Password Link */}
           <div className="flex items-center justify-between">
             <div className="text-sm">
               <Link to="/forgot-password" className="text-primary hover:underline">
@@ -194,6 +216,7 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full"
@@ -202,6 +225,7 @@ const Login = () => {
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
 
+          {/* Link to Signup */}
           <div className="text-center text-sm">
             <span className="text-gray-600">Don't have an account?</span>{" "}
             <Link to="/signup" className="text-primary hover:underline font-medium">

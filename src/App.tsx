@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -19,33 +19,7 @@ import OtpVerification from './pages/OtpVerification';
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
 
-// Function to verify Supabase connection in dev mode
-const verifySBConnection = async () => {
-  try {
-    const { data, error } = await supabase
-      .from("_dummy_query")
-      .select("*")
-      .limit(1);
-
-    if (error) {
-      console.error("Supabase connection error:", error);
-      return false;
-    }
-
-    console.log("Supabase connection verified successfully");
-    return true;
-  } catch (err) {
-    console.error("Supabase connection error:", {
-      message: err instanceof Error ? err.message : "Unknown error",
-      details: err instanceof Error ? err.stack : String(err),
-      hint: "",
-      code: ""
-    });
-    return false;
-  }
-};
-
-// Reusable loading spinner component
+// Loading spinner for async auth checks
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -54,46 +28,76 @@ const LoadingSpinner = () => (
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasStore, setHasStore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
+  const [hasStore, setHasStore] = useState(false);
+  const [hasProduct, setHasProduct] = useState(false);
 
   useEffect(() => {
-    // Check Supabase connection on app start
-    if (import.meta.env.DEV) {
-      verifySBConnection();
-    }
-
-    // Set up auth listener
+    // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth event:", event);
-
         if (event === "SIGNED_IN" && session) {
-          setIsAuthenticated(true);
-
-          // Check if user has a store
           try {
-            const { data: storeData } = await supabase
-              .from("stores")
-              .select("id")
-              .eq("user_id", session.user.id)
-              .maybeSingle();
+            // Check if user exists in users table
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-            setHasStore(!!storeData);
+            if (userError || !userData) {
+              setIsAuthenticated(false);
+              setHasStore(false);
+              setHasProduct(false);
+              toast({
+                title: "Account not found",
+                description: "Please sign up to create an account.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            setIsAuthenticated(true);
+
+            // Check for store
+            const { data: storeData, error: storeError } = await supabase
+              .from('stores')
+              .select('id')
+              .eq('user_id', session.user.id)
+              .single();
+
+            if (storeError || !storeData) {
+              setHasStore(false);
+              setHasProduct(false);
+              return;
+            }
+            setHasStore(true);
+
+            // Check for at least one product
+            const { data: productData, error: productError } = await supabase
+              .from('products')
+              .select('id')
+              .eq('user_id', session.user.id);
+
+            if (productError || !productData || productData.length === 0) {
+              setHasProduct(false);
+              return;
+            }
+            setHasProduct(true);
+
+            toast({
+              title: "Welcome back!",
+              description: "You have successfully signed in.",
+            });
           } catch (error) {
-            console.error("Error checking store:", error);
+            setIsAuthenticated(false);
             setHasStore(false);
+            setHasProduct(false);
           }
-
-          toast({
-            title: "Signed in",
-            description: "You have successfully signed in.",
-          });
         } else if (event === "SIGNED_OUT") {
           setIsAuthenticated(false);
           setHasStore(false);
-
+          setHasProduct(false);
           toast({
             title: "Signed out",
             description: "You have been signed out.",
@@ -102,30 +106,64 @@ const App: React.FC = () => {
       }
     );
 
-    // Check initial session
+    // Initial session check
     const checkSession = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-        if (error) throw error;
+        if (sessionData?.session) {
+          const userId = sessionData.session.user.id;
+          // Check user
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
 
-        if (data?.session) {
+          if (userError || !userData) {
+            setIsAuthenticated(false);
+            setHasStore(false);
+            setHasProduct(false);
+            return;
+          }
           setIsAuthenticated(true);
 
-          const { data: storeData } = await supabase
-            .from("stores")
-            .select("id")
-            .eq("user_id", data.session.user.id)
-            .maybeSingle();
+          // Check store
+          const { data: storeData, error: storeError } = await supabase
+            .from('stores')
+            .select('id')
+            .eq('user_id', userId)
+            .single();
 
-          setHasStore(!!storeData);
+          if (storeError || !storeData) {
+            setHasStore(false);
+            setHasProduct(false);
+            return;
+          }
+          setHasStore(true);
+
+          // Check product
+          const { data: productData, error: productError } = await supabase
+            .from('products')
+            .select('id')
+            .eq('user_id', userId);
+
+          if (productError || !productData || productData.length === 0) {
+            setHasProduct(false);
+            return;
+          }
+          setHasProduct(true);
         } else {
           setIsAuthenticated(false);
+          setHasStore(false);
+          setHasProduct(false);
         }
       } catch (err) {
-        console.error("Auth check failed:", err);
         setIsAuthenticated(false);
+        setHasStore(false);
+        setHasProduct(false);
       } finally {
         setIsLoading(false);
       }
@@ -140,34 +178,17 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Protected route component
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading) {
-      return <LoadingSpinner />;
-    }
-
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-
-    return <>{children}</>;
-  };
-
-  // Store setup required route
-  const StoreRequiredRoute = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading) {
-      return <LoadingSpinner />;
-    }
-
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-
-    if (!hasStore) {
-      return <Navigate to="/store-setup" replace />;
-    }
-
-    return <>{children}</>;
+  // Protect routes: redirect unauthenticated users to landing page
+  const getProtectedElement = (
+    element: React.ReactNode,
+    requireStore?: boolean,
+    requireProduct?: boolean
+  ) => {
+    if (isLoading) return <LoadingSpinner />;
+    if (!isAuthenticated) return <Navigate to="/" replace />;
+    if (requireStore && !hasStore) return <Navigate to="/store-setup" replace />;
+    if (requireProduct && !hasProduct) return <Navigate to="/add-product" replace />;
+    return <>{element}</>;
   };
 
   return (
@@ -179,32 +200,12 @@ const App: React.FC = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/store-setup" element={
-            <ProtectedRoute>
-              <StoreSetup />
-            </ProtectedRoute>
-          } />
-          <Route path="/add-product" element={
-            <StoreRequiredRoute>
-              <AddProduct />
-            </StoreRequiredRoute>
-          } />
-          <Route path="/dashboard" element={
-            <StoreRequiredRoute>
-              <Dashboard />
-            </StoreRequiredRoute>
-          } />
-          <Route path="/products" element={
-            <StoreRequiredRoute>
-              <Products />
-            </StoreRequiredRoute>
-          } />
-          <Route path="/product-details" element={
-            <StoreRequiredRoute>
-              <ProductDetails />
-            </StoreRequiredRoute>
-          } />
-          <Route path="/new-product" element={<NewProduct />} />
+          <Route path="/store-setup" element={getProtectedElement(<StoreSetup />, false, false)} />
+          <Route path="/add-product" element={getProtectedElement(<AddProduct />, true, false)} />
+          <Route path="/dashboard" element={getProtectedElement(<Dashboard />, true, true)} />
+          <Route path="/products" element={getProtectedElement(<Products />, true, true)} />
+          <Route path="/product-details" element={getProtectedElement(<ProductDetails />, true, true)} />
+          <Route path="/new-product" element={getProtectedElement(<NewProduct />, true, false)} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/otp-verification" element={<OtpVerification />} />

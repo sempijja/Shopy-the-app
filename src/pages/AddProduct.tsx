@@ -19,6 +19,7 @@ const AddProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Only check authentication
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
@@ -26,7 +27,6 @@ const AddProduct = () => {
         navigate("/login");
       }
     };
-    
     checkUser();
   }, [navigate]);
 
@@ -34,7 +34,12 @@ const AddProduct = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productName || !productPrice || (productType === "Physical" && !productQuantity) || (productType === "Digital" && !downloadLink)) {
+    if (
+      !productName ||
+      !productPrice ||
+      (productType === "Physical" && !productQuantity) ||
+      (productType === "Digital" && !downloadLink)
+    ) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields.",
@@ -92,7 +97,7 @@ const AddProduct = () => {
       }
 
       // Insert product details into the database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("products")
         .insert([
           {
@@ -113,7 +118,7 @@ const AddProduct = () => {
 
       // Mark onboarding as completed
       const { error: updateError } = await supabase
-        .from("profiles")
+        .from("users")
         .update({ onboarding_completed: true })
         .eq("id", userId);
 
@@ -128,7 +133,7 @@ const AddProduct = () => {
 
       // Redirect to the dashboard
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Product creation error:", error);
       toast({
         title: "Product Creation Failed",
@@ -289,7 +294,10 @@ const AddProduct = () => {
                 className="hidden"
                 id="productImages"
               />
-              <label htmlFor="productImages" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
+              <label
+                htmlFor="productImages"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Images
               </label>

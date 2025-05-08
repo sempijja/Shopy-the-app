@@ -62,8 +62,9 @@ const Signup = () => {
       if (signupMethod === "email") {
         toast({
           title: "Account created!",
-          description: "Please check your email for verification. You must verify your email before logging in.",
+          description: "Please check your email for verification. You must verify your email before continuing.",
         });
+        // After email verification, user will log in and be routed as in Login.tsx
         navigate("/login");
       } else {
         // Phone verification

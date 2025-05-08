@@ -7,6 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Package, Banknote, FileText, ImageIcon, Plus, Link, X, ChevronLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth"; // Custom hook to handle authentication
+
+
+// Add this type for batch operations
+type BatchOperation = {
+  images: { path: string; url: string }[];
+  productData: any;
+  profileUpdate: boolean;
+};
 
 const AddProduct = () => {
   const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
@@ -18,6 +27,7 @@ const AddProduct = () => {
   const [productImages, setProductImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth(); // Custom hook to handle session
 
   useEffect(() => {
     const checkUser = async () => {
@@ -30,9 +40,83 @@ const AddProduct = () => {
     checkUser();
   }, [navigate]);
 
-  // Handle form submission
+  // Optimized image upload with retry logic
+  const uploadImageWithRetry = async (
+    image: File,
+    userId: string,
+    retries = 3
+  ): Promise<{ path: string; url: string }> => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const fileName = `${userId}/${Date.now()}-${image.name}`;
+        const { data, error } = await supabase.storage
+          .from("product-images")
+          .upload(fileName, image);
+
+        if (error) throw error;
+
+        const publicUrlData = supabase.storage
+          .from("product-images")
+          .getPublicUrl(data.path);
+
+        return {
+          path: data.path,
+          url: publicUrlData.data.publicUrl
+        };
+      } catch (error) {
+        if (attempt === retries - 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+    throw new Error("Failed to upload image after multiple attempts");
+  };
+
+  // Batch operation function
+  const performBatchOperation = async (
+    batch: BatchOperation
+  ): Promise<void> => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    const { images, productData, profileUpdate } = batch;
+
+    // Start a Supabase transaction
+    const { data, error } = await supabase.rpc('create_product_with_profile', {
+      product_data: productData,
+      image_urls: images.map(img => img.url),
+      update_profile: profileUpdate
+    });
+
+    if (error) {
+      // Cleanup uploaded images if transaction fails
+      await Promise.all(
+        images.map(img =>
+          supabase.storage
+            .from("product-images")
+            .remove([img.path])
+        )
+      );
+      throw error;
+    }
+
+    return data;
+  };
+
+  // Optimized form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!session) {
+      toast({
+        title: "Not Authenticated",
+        description: "Please log in to add a product.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
 
     if (!productName || !productPrice || (productType === "Physical" && !productQuantity) || (productType === "Digital" && !downloadLink)) {
       toast({
@@ -46,20 +130,9 @@ const AddProduct = () => {
     setIsLoading(true);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session?.user) {
-        toast({
-          title: "Not Authenticated",
-          description: "Please log in to add a product.",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
-      }
+      const userId = session.user.id;
 
-      const userId = sessionData.session.user.id;
-
-      // Fetch the storeId for the logged-in user
+      // Fetch store data (can be cached in a custom hook)
       const { data: storeData, error: storeError } = await supabase
         .from("stores")
         .select("id")
@@ -70,63 +143,34 @@ const AddProduct = () => {
         throw new Error("Failed to fetch store information. Please ensure your store is set up.");
       }
 
-      const storeId = storeData.id;
+      // Upload all images in parallel with retry logic
+      const uploadedImages = await Promise.all(
+        productImages.map(image => uploadImageWithRetry(image, userId))
+      );
 
-      // Upload images to Supabase storage
-      const uploadedImageUrls: string[] = [];
-      for (const image of productImages) {
-        const { data, error } = await supabase.storage
-          .from("product-images")
-          .upload(`${userId}/${Date.now()}-${image.name}`, image);
+      // Prepare batch operation
+      const batchOperation: BatchOperation = {
+        images: uploadedImages,
+        productData: {
+          user_id: userId,
+          store_id: storeData.id,
+          name: productName,
+          price: parseFloat(productPrice),
+          quantity: productType === "Physical" ? parseInt(productQuantity) : null,
+          download_link: productType === "Digital" ? downloadLink : null,
+          description: productDescription,
+        },
+        profileUpdate: true
+      };
 
-        if (error) {
-          console.error("Image upload error:", error);
-          throw error;
-        }
-
-        const publicUrlData = supabase.storage
-          .from("product-images")
-          .getPublicUrl(data.path);
-
-        uploadedImageUrls.push(publicUrlData.data.publicUrl);
-      }
-
-      // Insert product details into the database
-      const { data, error } = await supabase
-        .from("products")
-        .insert([
-          {
-            user_id: userId,
-            store_id: storeId,
-            name: productName,
-            price: parseFloat(productPrice),
-            quantity: productType === "Physical" ? parseInt(productQuantity) : null,
-            download_link: productType === "Digital" ? downloadLink : null,
-            description: productDescription,
-            images: uploadedImageUrls,
-          },
-        ]);
-
-      if (error) {
-        throw error;
-      }
-
-      // Mark onboarding as completed
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ onboarding_completed: true })
-        .eq("id", userId);
-
-      if (updateError) {
-        throw updateError;
-      }
+      // Perform batch operation
+      await performBatchOperation(batchOperation);
 
       toast({
         title: "Product added!",
         description: "Your product has been added successfully.",
       });
 
-      // Redirect to the dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error("Product creation error:", error);

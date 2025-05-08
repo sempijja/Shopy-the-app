@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Home, 
-  ShoppingCart, 
+  ListOrdered, 
   Package, 
   Bell, 
   User,
@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   const menuItems = [
     { id: "home", label: "Home", icon: Home },
-    { id: "orders", label: "Orders", icon: ShoppingCart },
+    { id: "orders", label: "Orders", icon: ListOrdered },
     { id: "products", label: "Products", icon: Package },
     { id: "alerts", label: "Alerts", icon: Bell },
     { id: "profile", label: "Profile", icon: User },
@@ -193,7 +193,7 @@ const Dashboard = () => {
                       <TableRow>
                         <TableCell className="py-2 pl-0">
                           <div className="flex items-center gap-2">
-                            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                            <ListOrdered className="h-4 w-4 text-muted-foreground" />
                             <span>Orders</span>
                           </div>
                         </TableCell>

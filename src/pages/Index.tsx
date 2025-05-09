@@ -22,21 +22,33 @@ const Index = () => {
   illustration.resize(fill().width(400).height(400)); // Resize to 400x400 pixels for better quality
 
   useEffect(() => {
+    let didCancel = false;
     const checkSession = async () => {
       try {
-        // Check if the user session exists before making unnecessary calls
         const { data } = await supabase.auth.getSession();
-        if (data?.session?.user) {
+        if (!didCancel && data?.session?.user) {
           setUser(data.session.user);
         }
       } catch (error) {
-        console.error('Error checking auth session:', error);
+        if (!didCancel) {
+          console.error('Error checking auth session:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!didCancel) setLoading(false);
       }
     };
 
+    // Timeout fallback: force loading to false after 5 seconds
+    const timeout = setTimeout(() => {
+      if (!didCancel) setLoading(false);
+    }, 5000);
+
     checkSession();
+
+    return () => {
+      didCancel = true;
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Optimize loading state by avoiding unnecessary renders

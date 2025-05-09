@@ -21,6 +21,7 @@ const Products = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
   // Fetch products from Supabase
   useEffect(() => {
@@ -60,6 +61,7 @@ const Products = () => {
 
         if (productsError) {
           console.error("Error fetching products:", productsError);
+          setIsError(true);
           return;
         }
 
@@ -67,6 +69,7 @@ const Products = () => {
         setFilteredProducts(productsData || []); // Initialize filtered products
       } catch (error) {
         console.error("Error fetching products:", error);
+        setIsError(true);
       } finally {
         setLoading(false);
       }
@@ -141,7 +144,13 @@ const Products = () => {
       <ScrollArea className="flex-1 overflow-y-auto">
         <div className="px-4 pb-24">
           {loading ? (
-            <p className="text-center text-gray-500">Loading products...</p>
+            <div>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse h-12 bg-gray-100 rounded mb-2" />
+              ))}
+            </div>
+          ) : isError ? (
+            <p className="text-center text-red-500">Failed to load products.</p>
           ) : filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center text-gray-500 mt-20">
               <Package className="h-12 w-12 mb-4" />

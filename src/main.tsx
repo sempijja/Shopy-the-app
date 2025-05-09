@@ -60,7 +60,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 root.render(
   <React.StrictMode>
     <StoreProvider>
-      <BrowserRouter basename={import.meta.env.MODE === "production" ? "/Shopy-the-app" : "/"}>
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     </StoreProvider>

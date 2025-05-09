@@ -5,15 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Package, Banknote, FileText, ImageIcon, Plus, Link, X, ChevronLeft } from "lucide-react";
+import { Package, Banknote, ImageIcon, Plus, Link, X, ChevronLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/use-auth"; // Custom hook to handle authentication
-
-type BatchOperation = {
-  images: { path: string; url: string }[];
-  productData: any;
-  profileUpdate: boolean;
-};
+import { useAuth } from "@/hooks/use-auth";
 
 const MAX_IMAGE_SIZE_MB = 5;
 
@@ -41,17 +35,16 @@ const NewProduct = () => {
     checkUser();
   }, [navigate]);
 
-  // Optimized image upload with progress and retry logic
+  // Image upload helper
   const uploadImageWithProgress = async (
     image: File,
     userId: string,
     idx: number,
     retries = 3
-  ): Promise<{ path: string; url: string }> => {
+  ): Promise<string> => {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const fileName = `${userId}/${Date.now()}-${image.name}`;
-        // Supabase JS SDK does not support progress, so we just set to 100% after upload
         const { data, error } = await supabase.storage
           .from("product-images")
           .upload(fileName, image);
@@ -68,10 +61,7 @@ const NewProduct = () => {
           .from("product-images")
           .getPublicUrl(data.path);
 
-        return {
-          path: data.path,
-          url: publicUrlData.data.publicUrl,
-        };
+        return publicUrlData.data.publicUrl;
       } catch (error) {
         if (attempt === retries - 1) throw error;
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
@@ -80,40 +70,7 @@ const NewProduct = () => {
     throw new Error("Failed to upload image after multiple attempts");
   };
 
-  // Batch operation function
-  const performBatchOperation = async (
-    batch: BatchOperation
-  ): Promise<void> => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session?.user) {
-      throw new Error("Not authenticated");
-    }
-
-    const { images, productData, profileUpdate } = batch;
-
-    // Start a Supabase transaction
-    const { data, error } = await supabase.rpc('create_product_with_profile', {
-      product_data: productData,
-      image_urls: images.map(img => img.url),
-      update_profile: profileUpdate
-    });
-
-    if (error) {
-      // Cleanup uploaded images if transaction fails
-      await Promise.all(
-        images.map(img =>
-          supabase.storage
-            .from("product-images")
-            .remove([img.path])
-        )
-      );
-      throw error;
-    }
-
-    return data;
-  };
-
-  // Optimized form submission
+  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -141,7 +98,7 @@ const NewProduct = () => {
     try {
       const userId = session.user.id;
 
-      // Fetch store data (can be cached in a custom hook)
+      // Fetch store data
       const { data: storeData, error: storeError } = await supabase
         .from("stores")
         .select("id")
@@ -155,28 +112,30 @@ const NewProduct = () => {
       // Upload all images in parallel with progress
       setUploading(true);
       setUploadProgress(Array(productImages.length).fill(0));
-      const uploadedImages = await Promise.all(
+      const uploadedImageUrls = await Promise.all(
         productImages.map((image, idx) => uploadImageWithProgress(image, userId, idx))
       );
       setUploading(false);
 
-      // Prepare batch operation
-      const batchOperation: BatchOperation = {
-        images: uploadedImages,
-        productData: {
-          user_id: userId,
-          store_id: storeData.id,
-          name: productName,
-          price: parseFloat(productPrice),
-          quantity: productType === "Physical" ? parseInt(productQuantity) : null,
-          download_link: productType === "Digital" ? downloadLink : null,
-          description: productDescription,
-        },
-        profileUpdate: true
-      };
+      // Insert product details into the database
+      const { error } = await supabase
+        .from("products")
+        .insert([
+          {
+            user_id: userId,
+            store_id: storeData.id,
+            name: productName,
+            price: parseFloat(productPrice),
+            quantity: productType === "Physical" ? parseInt(productQuantity) : null,
+            download_link: productType === "Digital" ? downloadLink : null,
+            description: productDescription,
+            images: uploadedImageUrls,
+          },
+        ]);
 
-      // Perform batch operation
-      await performBatchOperation(batchOperation);
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: "Product added!",

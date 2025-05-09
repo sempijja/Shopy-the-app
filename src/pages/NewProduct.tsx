@@ -9,15 +9,15 @@ import { Package, Banknote, FileText, ImageIcon, Plus, Link, X, ChevronLeft } fr
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth"; // Custom hook to handle authentication
 
-
-// Add this type for batch operations
 type BatchOperation = {
   images: { path: string; url: string }[];
   productData: any;
   profileUpdate: boolean;
 };
 
-const AddProduct = () => {
+const MAX_IMAGE_SIZE_MB = 5;
+
+const NewProduct = () => {
   const [productType, setProductType] = useState<"Physical" | "Digital">("Physical");
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
@@ -26,8 +26,10 @@ const AddProduct = () => {
   const [productDescription, setProductDescription] = useState("");
   const [productImages, setProductImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
-  const { session } = useAuth(); // Custom hook to handle session
+  const { session } = useAuth();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -36,24 +38,31 @@ const AddProduct = () => {
         navigate("/login");
       }
     };
-    
     checkUser();
   }, [navigate]);
 
-  // Optimized image upload with retry logic
-  const uploadImageWithRetry = async (
+  // Optimized image upload with progress and retry logic
+  const uploadImageWithProgress = async (
     image: File,
     userId: string,
+    idx: number,
     retries = 3
   ): Promise<{ path: string; url: string }> => {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const fileName = `${userId}/${Date.now()}-${image.name}`;
+        // Supabase JS SDK does not support progress, so we just set to 100% after upload
         const { data, error } = await supabase.storage
           .from("product-images")
           .upload(fileName, image);
 
         if (error) throw error;
+
+        setUploadProgress((prev) => {
+          const updated = [...prev];
+          updated[idx] = 100;
+          return updated;
+        });
 
         const publicUrlData = supabase.storage
           .from("product-images")
@@ -61,11 +70,11 @@ const AddProduct = () => {
 
         return {
           path: data.path,
-          url: publicUrlData.data.publicUrl
+          url: publicUrlData.data.publicUrl,
         };
       } catch (error) {
         if (attempt === retries - 1) throw error;
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
     throw new Error("Failed to upload image after multiple attempts");
@@ -107,7 +116,7 @@ const AddProduct = () => {
   // Optimized form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!session) {
       toast({
         title: "Not Authenticated",
@@ -143,10 +152,13 @@ const AddProduct = () => {
         throw new Error("Failed to fetch store information. Please ensure your store is set up.");
       }
 
-      // Upload all images in parallel with retry logic
+      // Upload all images in parallel with progress
+      setUploading(true);
+      setUploadProgress(Array(productImages.length).fill(0));
       const uploadedImages = await Promise.all(
-        productImages.map(image => uploadImageWithRetry(image, userId))
+        productImages.map((image, idx) => uploadImageWithProgress(image, userId, idx))
       );
+      setUploading(false);
 
       // Prepare batch operation
       const batchOperation: BatchOperation = {
@@ -171,8 +183,8 @@ const AddProduct = () => {
         description: "Your product has been added successfully.",
       });
 
-      navigate("/dashboard");
-    } catch (error) {
+      navigate("/products");
+    } catch (error: any) {
       console.error("Product creation error:", error);
       toast({
         title: "Product Creation Failed",
@@ -181,6 +193,7 @@ const AddProduct = () => {
       });
     } finally {
       setIsLoading(false);
+      setUploading(false);
     }
   };
 
@@ -189,6 +202,19 @@ const AddProduct = () => {
     if (!e.target.files) return;
 
     const files = Array.from(e.target.files);
+
+    // Check file size limit (5MB per image)
+    for (const file of files) {
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        toast({
+          title: "Image too large",
+          description: `Each image must be less than ${MAX_IMAGE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (files.length + productImages.length > 6) {
       toast({
         title: "Image limit exceeded",
@@ -199,11 +225,13 @@ const AddProduct = () => {
     }
 
     setProductImages((prev) => [...prev, ...files]);
+    setUploadProgress((prev) => [...prev, ...Array(files.length).fill(0)]);
   };
 
   // Remove an image
   const removeImage = (index: number) => {
     setProductImages((prev) => prev.filter((_, i) => i !== index));
+    setUploadProgress((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -335,14 +363,17 @@ const AddProduct = () => {
                 className="hidden"
                 id="productImages"
               />
-              <label htmlFor="productImages" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
+              <label
+                htmlFor="productImages"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Images
               </label>
               <p className="text-xs text-gray-500 mt-2">{productImages.length}/6 images uploaded</p>
             </div>
 
-            {/* Image Previews */}
+            {/* Image Previews & Progress */}
             <div className="mt-4 grid grid-cols-3 gap-4">
               {productImages.map((image, index) => (
                 <div key={index} className="relative">
@@ -358,6 +389,15 @@ const AddProduct = () => {
                   >
                     <X className="h-4 w-4" />
                   </button>
+                  {/* Progress Bar */}
+                  {uploading && (
+                    <div className="absolute bottom-0 left-0 w-full h-2 bg-gray-200 rounded-b-lg overflow-hidden">
+                      <div
+                        className="bg-blue-500 h-2 transition-all"
+                        style={{ width: `${uploadProgress[index] || 0}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -377,4 +417,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default NewProduct;

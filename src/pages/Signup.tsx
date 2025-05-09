@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // check passwords if they match
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -38,53 +40,84 @@ const Signup = () => {
       // Format phone number if signup method is phone
       const formattedPhone = signupMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
 
-      const credentials =
-        signupMethod === "email"
-          ? { email: identifier, password }
-          : { phone: formattedPhone, password };
+      console.log("Attempting signup with", signupMethod === "email" ? "email" : "phone");
+      
+      // Simplified metadata to avoid potential database schema conflicts
+      const userMetadata = {
+        full_name: name,
+      };
 
+      // Try to sign up with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
-        ...credentials,
+        email: signupMethod === "email" ? identifier : undefined,
+        phone: signupMethod === "phone" ? formattedPhone : undefined,
+        password,
         options: {
-          data: {
-            full_name: name, // Store the user's full name in the database
-            onboarding_completed: false, // Set onboarding status to false
-          },
-          emailRedirectTo: `${window.location.origin}/store-setup`, // Redirect to store setup after confirmation
+          data: userMetadata,
+          emailRedirectTo: `${window.location.origin}/login`,
         },
       });
 
       if (error) {
         console.error("Signup error:", error);
+        
+        // Handle duplicate account error
+        if (
+          error.message.toLowerCase().includes("user already registered") ||
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("user already exists") ||
+          error.message.toLowerCase().includes("duplicate key")
+        ) {
+          toast({
+            title: "Account Already Exists",
+            description: "An account with these details already exists. Please log in.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          navigate("/login");
+          return;
+        }
+        // Other errors
         throw error;
       }
+
+      console.log("Signup successful:", data);
 
       if (signupMethod === "email") {
         toast({
           title: "Account created!",
           description: "Please check your email for verification. You must verify your email before continuing.",
         });
-        // After email verification, user will log in and be routed as in Login.tsx
         navigate("/login");
       } else {
         // Phone verification
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          phone: formattedPhone,
-        });
+        try {
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            phone: formattedPhone,
+          });
 
-        if (otpError) {
-          console.error("OTP sending error:", otpError);
-          throw otpError;
+          if (otpError) {
+            console.error("OTP sending error:", otpError);
+            throw otpError;
+          }
+
+          toast({
+            title: "Account created!",
+            description: "An OTP has been sent to your phone. Please verify your account.",
+          });
+
+          navigate("/otp-verification"); // Navigate to the OTP verification screen
+        } catch (otpError: any) {
+          console.error("OTP error:", otpError);
+          toast({
+            title: "OTP Sending Failed",
+            description: otpError.message || "Failed to send verification code. Please try again.",
+            variant: "destructive",
+          });
         }
-
-        toast({
-          title: "Account created!",
-          description: "An OTP has been sent to your phone. Please verify your account.",
-        });
-
-        navigate("/otp-verification"); // Navigate to the OTP verification screen
       }
     } catch (error: any) {
+      console.error("Full signup error:", error);
       toast({
         title: "Registration Failed",
         description: error.message || "There was an error creating your account. Please try again.",

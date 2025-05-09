@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   Leaf, Dog, Diamond, Footprints, Gift, 
   Calendar, Briefcase, FileText 
 } from "lucide-react";
+import { useStoreContext } from "@/context/StoreContext";
 
 const INDUSTRY_ICONS = {
   "Apparel & Accessories": Building,
@@ -44,6 +44,7 @@ const StoreSetup = () => {
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setHasStore } = useStoreContext();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -112,6 +113,9 @@ const StoreSetup = () => {
       if (error) {
         throw error;
       }
+
+      // Update global hasStore state
+      setHasStore(true);
 
       toast({
         title: "Store created!",

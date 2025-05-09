@@ -56,50 +56,12 @@ const Login = () => {
         return;
       }
 
-      // Get user ID from session data
-      const userId = data.session.user.id;
-
-      // 1. No need to check if user exists in users table (it doesn't exist anymore)
-
-      // 2. Check if the user has a store
-      const { data: storeData, error: storeError } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("user_id", userId)
-        .single();
-
-      if (storeError || !storeData) {
-        navigate("/store-setup");
-        toast({
-          title: "No Store Found",
-          description: "Please set up your store to continue.",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // 3. Check if the user has at least one product
-      const { data: productData, error: productError } = await supabase
-        .from("products")
-        .select("id")
-        .eq("user_id", userId);
-
-      if (productError || !productData || productData.length === 0) {
-        navigate("/add-product");
-        toast({
-          title: "No Products Found",
-          description: "Please add at least one product to continue.",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // 4. If user, store, and product exist, redirect to dashboard
-      navigate("/dashboard");
+      // Auth successful, let global logic handle navigation
       toast({
         title: "Logged In!",
         description: "You have successfully logged in.",
       });
+      navigate("/dashboard");
     } catch (error: any) {
       // Show error toast for login failure
       toast({

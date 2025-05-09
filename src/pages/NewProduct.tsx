@@ -241,7 +241,7 @@ const NewProduct = () => {
         <button onClick={() => navigate(-1)} className="mr-2">
           <ChevronLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-semibold flex-grow text-center">Add new Product</h1>
+        <h1 className="text-lg font-semibold flex-grow text-center">Add new product</h1>
         <div className="w-6"></div> {/* Placeholder for alignment */}
       </div>
 

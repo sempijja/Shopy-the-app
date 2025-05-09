@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,24 +40,27 @@ const Signup = () => {
       // Format phone number if signup method is phone
       const formattedPhone = signupMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
 
-      // Try to sign up with Supabase Auth
-      const credentials =
-        signupMethod === "email"
-          ? { email: identifier, password }
-          : { phone: formattedPhone, password };
+      console.log("Attempting signup with", signupMethod === "email" ? "email" : "phone");
+      
+      // Simplified metadata to avoid potential database schema conflicts
+      const userMetadata = {
+        full_name: name,
+      };
 
+      // Try to sign up with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
-        ...credentials,
+        email: signupMethod === "email" ? identifier : undefined,
+        phone: signupMethod === "phone" ? formattedPhone : undefined,
+        password,
         options: {
-          data: {
-            full_name: name, // Store the user's full name in the database
-            onboarding_completed: false, // Set onboarding status to false
-          },
-          emailRedirectTo: `${window.location.origin}/login`, // Redirect to login after confirmation
+          data: userMetadata,
+          emailRedirectTo: `${window.location.origin}/login`,
         },
       });
 
       if (error) {
+        console.error("Signup error:", error);
+        
         // Handle duplicate account error
         if (
           error.message.toLowerCase().includes("user already registered") ||
@@ -77,6 +81,8 @@ const Signup = () => {
         throw error;
       }
 
+      console.log("Signup successful:", data);
+
       if (signupMethod === "email") {
         toast({
           title: "Account created!",
@@ -85,23 +91,33 @@ const Signup = () => {
         navigate("/login");
       } else {
         // Phone verification
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          phone: formattedPhone,
-        });
+        try {
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            phone: formattedPhone,
+          });
 
-        if (otpError) {
-          console.error("OTP sending error:", otpError);
-          throw otpError;
+          if (otpError) {
+            console.error("OTP sending error:", otpError);
+            throw otpError;
+          }
+
+          toast({
+            title: "Account created!",
+            description: "An OTP has been sent to your phone. Please verify your account.",
+          });
+
+          navigate("/otp-verification"); // Navigate to the OTP verification screen
+        } catch (otpError: any) {
+          console.error("OTP error:", otpError);
+          toast({
+            title: "OTP Sending Failed",
+            description: otpError.message || "Failed to send verification code. Please try again.",
+            variant: "destructive",
+          });
         }
-
-        toast({
-          title: "Account created!",
-          description: "An OTP has been sent to your phone. Please verify your account.",
-        });
-
-        navigate("/otp-verification"); // Navigate to the OTP verification screen
       }
     } catch (error: any) {
+      console.error("Full signup error:", error);
       toast({
         title: "Registration Failed",
         description: error.message || "There was an error creating your account. Please try again.",

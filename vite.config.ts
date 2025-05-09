@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/Shopy-the-app/" : "/",
+  base:  "/",
   server: {
     port: 8080,
     strictPort: true, // Fail if port is already in use
@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#8a3bc2",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: "/Shopy-the-app/",
+        start_url: "/",
         icons: [
           {
             src: "favicons/android-icon-36x36.png",

@@ -4,21 +4,16 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 // Cache name with version
 const CACHE_NAME = "shopy-cache-v1";
 
-// Dynamically determine base path
-const BASE_PATH = self.location.pathname.replace('serviceWorker.js', '');
-
-// Essential files to cache
+// Essential files to cache (for Vercel/static hosting, use root-relative paths)
 const urlsToCache = [
-  `${BASE_PATH}`,
-  `${BASE_PATH}index.html`,
-  `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}favicons/android-icon-192x192.png`,
-  `${BASE_PATH}favicons/apple-icon-180x180.png`,
-  `${BASE_PATH}favicons/favicon-96x96.png`,
-  `${BASE_PATH}robots.txt`,
-  `${BASE_PATH}placeholder.svg`,
-  `${BASE_PATH}src/main.tsx`,
-  `${BASE_PATH}src/index.css`,
+  "/",
+  "/index.html",
+  "/manifest.json",
+  "/favicons/android-icon-192x192.png",
+  "/favicons/apple-icon-180x180.png",
+  "/favicons/favicon-96x96.png",
+  "/robots.txt",
+  "/placeholder.svg",
 ];
 
 // Install the service worker
@@ -97,7 +92,7 @@ self.addEventListener("fetch", (event) => {
       }).catch(() => {
         // If fetch fails, return a fallback response for navigation requests
         if (event.request.mode === 'navigate') {
-          return caches.match(`${BASE_PATH}index.html`);
+          return caches.match("/index.html");
         }
         return new Response('Network error occurred', {
           status: 408,
@@ -118,30 +113,32 @@ self.addEventListener('message', (event) => {
 });
 
 // Use Workbox to handle Supabase API requests
-workbox.routing.registerRoute(
-  new RegExp('https://[a-z0-9-]+\\.supabase\\.co/.*'),
-  new workbox.strategies.NetworkFirst({
-    cacheName: 'supabase-api-cache',
-    networkTimeoutSeconds: 10,
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 7, // Cache for 1 week
-      }),
-    ],
-  })
-);
+if (self.workbox) {
+  workbox.routing.registerRoute(
+    new RegExp('https://[a-z0-9-]+\\.supabase\\.co/.*'),
+    new workbox.strategies.NetworkFirst({
+      cacheName: 'supabase-api-cache',
+      networkTimeoutSeconds: 10,
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 7, // Cache for 1 week
+        }),
+      ],
+    })
+  );
 
-// Cache static assets like CSS, JS, and images
-workbox.routing.registerRoute(
-  ({ request }) => request.destination === 'style' || request.destination === 'script' || request.destination === 'image',
-  new workbox.strategies.CacheFirst({
-    cacheName: 'static-assets-cache',
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 30, // Cache for 30 days
-      }),
-    ],
-  })
-);
+  // Cache static assets like CSS, JS, and images
+  workbox.routing.registerRoute(
+    ({ request }) => request.destination === 'style' || request.destination === 'script' || request.destination === 'image',
+    new workbox.strategies.CacheFirst({
+      cacheName: 'static-assets-cache',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // Cache for 30 days
+        }),
+      ],
+    })
+  );
+}

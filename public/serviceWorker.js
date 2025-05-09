@@ -53,6 +53,16 @@ self.addEventListener("activate", (event) => {
 
 // Fetch requests and serve from cache with network fallback
 self.addEventListener("fetch", (event) => {
+  const url = event.request.url;
+  if (
+    url.includes("/auth/v1/") ||
+    url.includes("/rest/v1/") ||
+    url.includes("supabase.co/auth/v1") ||
+    url.includes("supabase.co/rest/v1")
+  ) {
+    return; // Don't cache auth or DB API requests
+  }
+
   // Ignore non-GET requests and chrome-extension requests
   if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
     return;

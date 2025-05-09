@@ -147,8 +147,7 @@ const App: React.FC = () => {
           <Route path="/add-product" element={getProtectedElement(<AddProduct />, true, false)} />
           <Route path="/dashboard" element={getProtectedElement(<Dashboard />, true, true)} />
           <Route path="/products" element={getProtectedElement(<Products />, true, true)} />
-          <Route path="/product-details" element={getProtectedElement(<ProductDetails />, true, true)} />
-          <Route path="/new-product" element={getProtectedElement(<NewProduct />, true, false)} />
+          <Route path="/product-details/:productId" element={getProtectedElement(<ProductDetails />, true, true)} />          <Route path="/new-product" element={getProtectedElement(<NewProduct />, true, false)} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/otp-verification" element={<OtpVerification />} />

@@ -59,6 +59,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
+       
 
   deploy:
     environment:
@@ -74,3 +75,4 @@ jobs:
         with:
           branch: ${{ github.ref_name }}
           folder: ${{ github.ref_name == 'main' && '.' || 'dev' }}
+

@@ -115,14 +115,14 @@ const StoreSetup = () => {
       }
 
       // Update global hasStore state
-      setHasStore(true);
+      setHasStore(true); // This will trigger the global redirect in App.tsx
+      // Do NOT call navigate("/add-product") here!
 
       toast({
         title: "Store created!",
         description: "Your store has been set up successfully.",
       });
 
-      navigate("/add-product");
     } catch (error) {
       console.error("Store setup error:", error);
       toast({

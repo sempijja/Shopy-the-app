@@ -23,6 +23,7 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // check passwords if they match
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -38,6 +39,7 @@ const Signup = () => {
       // Format phone number if signup method is phone
       const formattedPhone = signupMethod === "phone" ? formatPhoneNumber(identifier) : identifier;
 
+      // Try to sign up with Supabase Auth
       const credentials =
         signupMethod === "email"
           ? { email: identifier, password }
@@ -50,12 +52,28 @@ const Signup = () => {
             full_name: name, // Store the user's full name in the database
             onboarding_completed: false, // Set onboarding status to false
           },
-          emailRedirectTo: `${window.location.origin}/store-setup`, // Redirect to store setup after confirmation
+          emailRedirectTo: `${window.location.origin}/login`, // Redirect to login after confirmation
         },
       });
 
       if (error) {
-        console.error("Signup error:", error);
+        // Handle duplicate account error
+        if (
+          error.message.toLowerCase().includes("user already registered") ||
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("user already exists") ||
+          error.message.toLowerCase().includes("duplicate key")
+        ) {
+          toast({
+            title: "Account Already Exists",
+            description: "An account with these details already exists. Please log in.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          navigate("/login");
+          return;
+        }
+        // Other errors
         throw error;
       }
 
@@ -64,7 +82,6 @@ const Signup = () => {
           title: "Account created!",
           description: "Please check your email for verification. You must verify your email before continuing.",
         });
-        // After email verification, user will log in and be routed as in Login.tsx
         navigate("/login");
       } else {
         // Phone verification

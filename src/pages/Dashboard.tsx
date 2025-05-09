@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Home, 
@@ -62,12 +62,30 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from "@/components/ui/chart";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [storeName, setStoreName] = useState<string>("Store");
+  const { session } = useAuth();
+
+  // Fetch store name from Supabase
+  useEffect(() => {
+    const fetchStoreName = async () => {
+      if (!session?.user?.id) return;
+      const { data, error } = await supabase
+        .from("stores")
+        .select("store_name")
+        .eq("user_id", session.user.id)
+        .single();
+      if (data?.store_name) setStoreName(data.store_name);
+    };
+    fetchStoreName();
+  }, [session]);
 
   const handleLogout = () => {
     toast({
@@ -126,7 +144,7 @@ const Dashboard = () => {
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Charz Store</h2>
+                <h2 className="text-xl font-bold">{storeName}</h2>
               </div>
             </div>
 
@@ -156,24 +174,26 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Chart */}
-            <div className="h-72 w-full">
-              <ChartContainer config={chartConfig} className="h-full">
-                <LineChart data={salesData}>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <CartesianGrid vertical={false} stroke="#eee" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="sales" 
-                    stroke="#9b87f5" 
-                    strokeWidth={2} 
-                    dot={{ r: 4, fill: "#9b87f5" }}
-                    activeDot={{ r: 6, fill: "#9b87f5" }}
-                    name="sales"
-                  />
-                </LineChart>
+            {/* Responsive Chart */}
+            <div className="w-full" style={{ height: isMobile ? 220 : 288 }}>
+              <ChartContainer config={chartConfig.series}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={salesData}>
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <CartesianGrid vertical={false} stroke="#eee" />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="sales" 
+                      stroke="#9b87f5" 
+                      strokeWidth={2} 
+                      dot={{ r: 4, fill: "#9b87f5" }}
+                      activeDot={{ r: 6, fill: "#9b87f5" }}
+                      name="sales"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </div>
 

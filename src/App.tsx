@@ -38,25 +38,6 @@ const App: React.FC = () => {
       async (event, session) => {
         if (event === "SIGNED_IN" && session) {
           try {
-            // Check if user exists in users table
-            const { data: userData, error: userError } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-
-            if (userError || !userData) {
-              setIsAuthenticated(false);
-              setHasStore(false);
-              setHasProduct(false);
-              toast({
-                title: "Account not found",
-                description: "Please sign up to create an account.",
-                variant: "destructive",
-              });
-              return;
-            }
-
             setIsAuthenticated(true);
 
             // Check for store
@@ -115,19 +96,6 @@ const App: React.FC = () => {
 
         if (sessionData?.session) {
           const userId = sessionData.session.user.id;
-          // Check user
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (userError || !userData) {
-            setIsAuthenticated(false);
-            setHasStore(false);
-            setHasProduct(false);
-            return;
-          }
           setIsAuthenticated(true);
 
           // Check store

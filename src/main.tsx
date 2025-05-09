@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from './App.tsx'
 import './index.css'
+import { StoreProvider } from "@/context/StoreContext";
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,10 +59,10 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-    <BrowserRouter basename={import.meta.env.MODE === "production" ? "/Shopy-the-app" : "/"}>
-    <App />
+    <StoreProvider>
+      <BrowserRouter basename={import.meta.env.MODE === "production" ? "/Shopy-the-app" : "/"}>
+        <App />
       </BrowserRouter>
-    </QueryClientProvider>
+    </StoreProvider>
   </React.StrictMode>
 );

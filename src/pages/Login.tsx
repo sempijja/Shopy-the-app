@@ -47,28 +47,19 @@ const Login = () => {
           return;
         }
         // Show general login error
-        throw error;
-      }
-
-      // Get user ID from session data
-      const userId = data.session.user.id;
-
-      // 1. Check if user exists in users table
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (userError || !userData) {
         toast({
-          title: "Account Not Found",
-          description: "No account found. Please sign up.",
+          title: "Login Failed",
+          description: error.message || "Invalid credentials. Please try again.",
           variant: "destructive",
         });
         setIsLoading(false);
         return;
       }
+
+      // Get user ID from session data
+      const userId = data.session.user.id;
+
+      // 1. No need to check if user exists in users table (it doesn't exist anymore)
 
       // 2. Check if the user has a store
       const { data: storeData, error: storeError } = await supabase
